@@ -1,0 +1,67 @@
+{% extends "appbuilder/base.html" %}
+
+{% block content %}
+<div class="container-fluid">
+  <h2 class="page-header">
+    <i class="fa fa-money"></i> Reporte de Pagos por Reserva
+  </h2>
+
+  <div class="panel panel-default">
+    <div class="panel-heading">
+      <strong>Pagos registrados con detalle de reserva</strong>
+      <span class="badge pull-right">{{ pagos|length }} registros</span>
+    </div>
+    <div class="panel-body">
+      <div class="table-responsive">
+        <table class="table table-bordered table-striped table-hover">
+          <thead style="background-color:#3c3c3c; color:white;">
+            <tr>
+              <th># Pago</th>
+              <th># Reserva</th>
+              <th>Cliente</th>
+              <th>Habitación</th>
+              <th>Monto (Bs)</th>
+              <th>Método</th>
+              <th>Fecha de Pago</th>
+              <th>Estado Reserva</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for p in pagos %}
+            <tr>
+              <td>{{ p.id }}</td>
+              <td>{{ p.reserva.id }}</td>
+              <td>{{ p.reserva.cliente.nombre }}</td>
+              <td>Hab. {{ p.reserva.habitacion.numero }}</td>
+              <td><strong>{{ "%.2f"|format(p.monto) }}</strong></td>
+              <td>{{ p.metodo }}</td>
+              <td>{{ p.fecha }}</td>
+              <td>
+                {% if p.reserva.estado == 'confirmada' %}
+                  <span class="label label-success">{{ p.reserva.estado }}</span>
+                {% elif p.reserva.estado == 'pendiente' %}
+                  <span class="label label-warning">{{ p.reserva.estado }}</span>
+                {% else %}
+                  <span class="label label-danger">{{ p.reserva.estado }}</span>
+                {% endif %}
+              </td>
+            </tr>
+            {% else %}
+            <tr><td colspan="8" class="text-center text-muted">Sin registros</td></tr>
+            {% endfor %}
+          </tbody>
+          {% if pagos %}
+          <tfoot>
+            <tr style="background-color:#f5f5f5;">
+              <td colspan="4"><strong>TOTAL RECAUDADO</strong></td>
+              <td><strong>Bs {{ "%.2f"|format(total) }}</strong></td>
+              <td colspan="3"></td>
+            </tr>
+          </tfoot>
+          {% endif %}
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

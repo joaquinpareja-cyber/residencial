@@ -1,4 +1,4 @@
-from flask_appbuilder import ModelView
+from flask_appbuilder import ModelView, BaseView, expose
 from flask_appbuilder.models.sqla.interface import SQLAInterface
 
 from .extensions import appbuilder
@@ -102,6 +102,41 @@ class ReservaServicioView(ModelView):
     show_columns = ["reserva", "servicio", "cantidad"]
 
 
+# ── Reportes ─────────────────────────────────────────────────────────────────
+
+class ReporteReservas(BaseView):
+    route_base = "/reportes/reservas"
+
+    @expose("/")
+    def index(self):
+        reservas = Reserva.query.all()
+        return self.render_template("reportes/reporte_reservas.html", reservas=reservas)
+
+
+class ReportePagos(BaseView):
+    route_base = "/reportes/pagos"
+
+    @expose("/")
+    def index(self):
+        pagos = Pago.query.all()
+        total = sum(p.monto for p in pagos)
+        return self.render_template("reportes/reporte_pagos.html", pagos=pagos, total=total)
+
+
+class ReporteServicios(BaseView):
+    route_base = "/reportes/servicios"
+
+    @expose("/")
+    def index(self):
+        items = ReservaServicio.query.all()
+        total_servicios = sum(i.servicio.precio * i.cantidad for i in items)
+        return self.render_template(
+            "reportes/reporte_servicios.html",
+            items=items,
+            total_servicios=total_servicios,
+        )
+
+
 # ── Registro en el menú ──────────────────────────────────────────────────────
 appbuilder.add_view(
     TipoHabitacionView, "Tipos de Habitación",
@@ -130,4 +165,26 @@ appbuilder.add_view(
 appbuilder.add_view(
     ReservaServicioView, "Servicios por Reserva",
     icon="fa-list", category="Catálogos",
+)
+appbuilder.add_view_no_menu(ReporteReservas)
+appbuilder.add_view_no_menu(ReportePagos)
+appbuilder.add_view_no_menu(ReporteServicios)
+
+appbuilder.add_link(
+    "Reservas Detalladas",
+    href="/reportes/reservas/",
+    icon="fa-calendar",
+    category="Reportes",
+)
+appbuilder.add_link(
+    "Pagos por Reserva",
+    href="/reportes/pagos/",
+    icon="fa-money",
+    category="Reportes",
+)
+appbuilder.add_link(
+    "Servicios Consumidos",
+    href="/reportes/servicios/",
+    icon="fa-star",
+    category="Reportes",
 )
