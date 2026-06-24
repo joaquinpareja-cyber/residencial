@@ -1,0 +1,211 @@
+{% extends "appbuilder/base.html" %}
+
+{% block content %}
+<div class="container-fluid">
+  <h2 class="page-header">
+    <i class="fa fa-bar-chart"></i> Gráficos del Sistema
+  </h2>
+
+  <div class="row">
+
+    <!-- Gráfico 1: Reservas por estado (torta) -->
+    <div class="col-md-6">
+      <div class="panel panel-primary">
+        <div class="panel-heading">
+          <i class="fa fa-pie-chart"></i> Reservas por Estado
+        </div>
+        <div class="panel-body">
+          <canvas id="graficoReservasEstado" height="250"></canvas>
+        </div>
+      </div>
+      <div class="panel panel-default">
+        <div class="panel-heading" style="background-color:#3c3c3c; color:white;">
+          <i class="fa fa-table"></i> Reservas por Estado
+        </div>
+        <table class="table table-bordered table-striped">
+          <thead style="background-color:#555; color:white;">
+            <tr>
+              <th>#</th>
+              <th>Estado</th>
+              <th>Cantidad</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for i, d in reservas_estado | enumerate %}
+            <tr>
+              <td>{{ i + 1 }}</td>
+              <td>{{ d.estado }}</td>
+              <td><span class="badge" style="background-color:#4e73df;">{{ d.cantidad }}</span></td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Gráfico 2: Habitaciones por tipo (torta) -->
+    <div class="col-md-6">
+      <div class="panel panel-success">
+        <div class="panel-heading">
+          <i class="fa fa-pie-chart"></i> Habitaciones por Tipo
+        </div>
+        <div class="panel-body">
+          <canvas id="graficoHabitacionesTipo" height="250"></canvas>
+        </div>
+      </div>
+      <div class="panel panel-default">
+        <div class="panel-heading" style="background-color:#3c3c3c; color:white;">
+          <i class="fa fa-table"></i> Habitaciones por Tipo
+        </div>
+        <table class="table table-bordered table-striped">
+          <thead style="background-color:#555; color:white;">
+            <tr>
+              <th>#</th>
+              <th>Tipo</th>
+              <th>Cantidad</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for i, d in habitaciones_tipo | enumerate %}
+            <tr>
+              <td>{{ i + 1 }}</td>
+              <td>{{ d.tipo }}</td>
+              <td><span class="badge" style="background-color:#1cc88a;">{{ d.cantidad }}</span></td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="row">
+
+    <!-- Gráfico 3: Pagos por método (barras) -->
+    <div class="col-md-6">
+      <div class="panel panel-warning">
+        <div class="panel-heading">
+          <i class="fa fa-bar-chart"></i> Total Recaudado por Método de Pago (Bs)
+        </div>
+        <div class="panel-body">
+          <canvas id="graficoPagoMetodo" height="250"></canvas>
+        </div>
+      </div>
+      <div class="panel panel-default">
+        <div class="panel-heading" style="background-color:#3c3c3c; color:white;">
+          <i class="fa fa-table"></i> Pagos por Método
+        </div>
+        <table class="table table-bordered table-striped">
+          <thead style="background-color:#555; color:white;">
+            <tr>
+              <th>#</th>
+              <th>Método</th>
+              <th>Total (Bs)</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for i, d in pagos_metodo | enumerate %}
+            <tr>
+              <td>{{ i + 1 }}</td>
+              <td>{{ d.metodo }}</td>
+              <td><span class="badge" style="background-color:#f6c23e; color:#333;">{{ d.total }}</span></td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Gráfico 4: Servicios más consumidos (barras) -->
+    <div class="col-md-6">
+      <div class="panel panel-danger">
+        <div class="panel-heading">
+          <i class="fa fa-bar-chart"></i> Servicios Más Consumidos
+        </div>
+        <div class="panel-body">
+          <canvas id="graficoServicios" height="250"></canvas>
+        </div>
+      </div>
+      <div class="panel panel-default">
+        <div class="panel-heading" style="background-color:#3c3c3c; color:white;">
+          <i class="fa fa-table"></i> Servicios Consumidos
+        </div>
+        <table class="table table-bordered table-striped">
+          <thead style="background-color:#555; color:white;">
+            <tr>
+              <th>#</th>
+              <th>Servicio</th>
+              <th>Cantidad</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for i, d in servicios_consumo | enumerate %}
+            <tr>
+              <td>{{ i + 1 }}</td>
+              <td>{{ d.servicio }}</td>
+              <td><span class="badge" style="background-color:#e74a3b;">{{ d.total }}</span></td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script>
+  const datosReservasEstado   = {{ reservas_estado   | tojson }};
+  const datosHabitacionesTipo = {{ habitaciones_tipo | tojson }};
+  const datosPagoMetodo       = {{ pagos_metodo      | tojson }};
+  const datosServicios        = {{ servicios_consumo | tojson }};
+
+  const colores = ["#4e73df","#1cc88a","#e74a3b","#f6c23e","#36b9cc","#858796"];
+
+  new Chart(document.getElementById("graficoReservasEstado"), {
+    type: "pie",
+    data: {
+      labels: datosReservasEstado.map(d => d.estado),
+      datasets: [{ data: datosReservasEstado.map(d => d.cantidad), backgroundColor: colores }]
+    },
+    options: { plugins: { legend: { position: "bottom" } } }
+  });
+
+  new Chart(document.getElementById("graficoHabitacionesTipo"), {
+    type: "pie",
+    data: {
+      labels: datosHabitacionesTipo.map(d => d.tipo),
+      datasets: [{ data: datosHabitacionesTipo.map(d => d.cantidad), backgroundColor: colores }]
+    },
+    options: { plugins: { legend: { position: "bottom" } } }
+  });
+
+  new Chart(document.getElementById("graficoPagoMetodo"), {
+    type: "bar",
+    data: {
+      labels: datosPagoMetodo.map(d => d.metodo),
+      datasets: [{
+        label: "Total (Bs)",
+        data: datosPagoMetodo.map(d => d.total),
+        backgroundColor: colores,
+      }]
+    },
+    options: { plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true } } }
+  });
+
+  new Chart(document.getElementById("graficoServicios"), {
+    type: "bar",
+    data: {
+      labels: datosServicios.map(d => d.servicio),
+      datasets: [{
+        label: "Cantidad",
+        data: datosServicios.map(d => d.total),
+        backgroundColor: "#1cc88a",
+      }]
+    },
+    options: { plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true } } }
+  });
+</script>
+{% endblock %}

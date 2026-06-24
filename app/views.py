@@ -1,7 +1,8 @@
 from flask_appbuilder import ModelView, BaseView, expose
 from flask_appbuilder.models.sqla.interface import SQLAInterface
+from sqlalchemy import func
 
-from .extensions import appbuilder
+from .extensions import appbuilder, db
 from .models import (
     TipoHabitacion, Habitacion, Cliente,
     Reserva, Pago, Servicio, ReservaServicio
@@ -137,6 +138,58 @@ class ReporteServicios(BaseView):
         )
 
 
+class ReporteGraficos(BaseView):
+    route_base = "/reportes/graficos"
+
+    @expose("/")
+    def index(self):
+        # Reservas agrupadas por estado
+        reservas_estado = [
+            {"estado": r.estado, "cantidad": c}
+            for r, c in (
+                db.session.query(Reserva, func.count(Reserva.id))
+                .group_by(Reserva.estado).all()
+            )
+        ]
+
+        # Habitaciones agrupadas por tipo
+        habitaciones_tipo = [
+            {"tipo": t.nombre, "cantidad": c}
+            for t, c in (
+                db.session.query(TipoHabitacion, func.count(Habitacion.id))
+                .join(Habitacion, Habitacion.tipo_id == TipoHabitacion.id)
+                .group_by(TipoHabitacion.nombre).all()
+            )
+        ]
+
+        # Total recaudado por método de pago
+        pagos_metodo = [
+            {"metodo": metodo, "total": round(float(total), 2)}
+            for metodo, total in (
+                db.session.query(Pago.metodo, func.sum(Pago.monto))
+                .group_by(Pago.metodo).all()
+            )
+        ]
+
+        # Servicios más consumidos (suma de cantidades)
+        servicios_consumo = [
+            {"servicio": s.nombre, "total": int(total)}
+            for s, total in (
+                db.session.query(Servicio, func.sum(ReservaServicio.cantidad))
+                .join(ReservaServicio, ReservaServicio.servicio_id == Servicio.id)
+                .group_by(Servicio.nombre).all()
+            )
+        ]
+
+        return self.render_template(
+            "reportes/reporte_graficos.html",
+            reservas_estado=reservas_estado,
+            habitaciones_tipo=habitaciones_tipo,
+            pagos_metodo=pagos_metodo,
+            servicios_consumo=servicios_consumo,
+        )
+
+
 # ── Registro en el menú ──────────────────────────────────────────────────────
 appbuilder.add_view(
     TipoHabitacionView, "Tipos de Habitación",
@@ -169,6 +222,7 @@ appbuilder.add_view(
 appbuilder.add_view_no_menu(ReporteReservas)
 appbuilder.add_view_no_menu(ReportePagos)
 appbuilder.add_view_no_menu(ReporteServicios)
+appbuilder.add_view_no_menu(ReporteGraficos)
 
 appbuilder.add_link(
     "Reservas Detalladas",
@@ -186,5 +240,11 @@ appbuilder.add_link(
     "Servicios Consumidos",
     href="/reportes/servicios/",
     icon="fa-star",
+    category="Reportes",
+)
+appbuilder.add_link(
+    "Gráficos",
+    href="/reportes/graficos/",
+    icon="fa-bar-chart",
     category="Reportes",
 )
