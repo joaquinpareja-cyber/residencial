@@ -1,0 +1,60 @@
+{% extends "appbuilder/base.html" %}
+
+{% block content %}
+<div class="container-fluid">
+  <h2 class="page-header">
+    <i class="fa fa-calendar"></i> Reporte de Reservas
+  </h2>
+
+  <div class="panel panel-default">
+    <div class="panel-heading">
+      <strong>Reservas con Cliente y Habitación</strong>
+      <span class="badge pull-right">{{ reservas|length }} registros</span>
+    </div>
+    <div class="panel-body">
+      <div class="table-responsive">
+        <table class="table table-bordered table-striped table-hover">
+          <thead class="thead-dark" style="background-color:#3c3c3c; color:white;">
+            <tr>
+              <th>#</th>
+              <th>Cliente</th>
+              <th>Teléfono</th>
+              <th>Habitación</th>
+              <th>Tipo</th>
+              <th>Precio/Noche (Bs)</th>
+              <th>Fecha Entrada</th>
+              <th>Fecha Salida</th>
+              <th>Estado</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for r in reservas %}
+            <tr>
+              <td>{{ r.id }}</td>
+              <td>{{ r.cliente.nombre }}</td>
+              <td>{{ r.cliente.telefono or '-' }}</td>
+              <td>Hab. {{ r.habitacion.numero }}</td>
+              <td>{{ r.habitacion.tipo.nombre }}</td>
+              <td>{{ "%.2f"|format(r.habitacion.precio_noche) }}</td>
+              <td>{{ r.fecha_entrada }}</td>
+              <td>{{ r.fecha_salida }}</td>
+              <td>
+                {% if r.estado == 'confirmada' %}
+                  <span class="label label-success">{{ r.estado }}</span>
+                {% elif r.estado == 'pendiente' %}
+                  <span class="label label-warning">{{ r.estado }}</span>
+                {% else %}
+                  <span class="label label-danger">{{ r.estado }}</span>
+                {% endif %}
+              </td>
+            </tr>
+            {% else %}
+            <tr><td colspan="9" class="text-center text-muted">Sin registros</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

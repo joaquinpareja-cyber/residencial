@@ -1,0 +1,56 @@
+{% extends "appbuilder/base.html" %}
+
+{% block content %}
+<div class="container-fluid">
+  <h2 class="page-header">
+    <i class="fa fa-star"></i> Reporte de Servicios por Reserva
+  </h2>
+
+  <div class="panel panel-default">
+    <div class="panel-heading">
+      <strong>Servicios adicionales consumidos</strong>
+      <span class="badge pull-right">{{ items|length }} registros</span>
+    </div>
+    <div class="panel-body">
+      <div class="table-responsive">
+        <table class="table table-bordered table-striped table-hover">
+          <thead style="background-color:#3c3c3c; color:white;">
+            <tr>
+              <th># Reserva</th>
+              <th>Cliente</th>
+              <th>Habitación</th>
+              <th>Servicio</th>
+              <th>Precio Unit. (Bs)</th>
+              <th>Cantidad</th>
+              <th>Subtotal (Bs)</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for i in items %}
+            <tr>
+              <td>{{ i.reserva.id }}</td>
+              <td>{{ i.reserva.cliente.nombre }}</td>
+              <td>Hab. {{ i.reserva.habitacion.numero }}</td>
+              <td>{{ i.servicio.nombre }}</td>
+              <td>{{ "%.2f"|format(i.servicio.precio) }}</td>
+              <td>{{ i.cantidad }}</td>
+              <td><strong>{{ "%.2f"|format(i.servicio.precio * i.cantidad) }}</strong></td>
+            </tr>
+            {% else %}
+            <tr><td colspan="7" class="text-center text-muted">Sin registros</td></tr>
+            {% endfor %}
+          </tbody>
+          {% if items %}
+          <tfoot>
+            <tr style="background-color:#f5f5f5;">
+              <td colspan="6"><strong>TOTAL SERVICIOS</strong></td>
+              <td><strong>Bs {{ "%.2f"|format(total_servicios) }}</strong></td>
+            </tr>
+          </tfoot>
+          {% endif %}
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
