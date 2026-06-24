@@ -8,16 +8,19 @@ def create_app() -> Flask:
     db.init_app(app)
 
     with app.app_context():
-        # 1. Primero importar modelos (registra las tablas en SQLAlchemy)
+        # 1. Importar modelos
         from . import models  # noqa: F401
 
-        # 2. Luego inicializar appbuilder
+        # 2. Inicializar appbuilder
         appbuilder.init_app(app, db.session)
 
-        # 3. Crear tablas en la base de datos
+        # 3. Crear tablas
         db.create_all()
 
-        # 4. Por último importar vistas
+        # 4. Agregar filtro enumerate a Jinja2
+        app.jinja_env.filters['enumerate'] = enumerate
+
+        # 5. Importar vistas
         from . import views  # noqa: F401
 
     return app
