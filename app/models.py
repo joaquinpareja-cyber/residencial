@@ -1,5 +1,5 @@
 from .extensions import db
-from sqlalchemy import Column, Integer, String, Float, Date, ForeignKey
+from sqlalchemy import Column, Integer, String, Float, Date, ForeignKey, Boolean
 from sqlalchemy.orm import relationship
 
 
@@ -48,9 +48,13 @@ class Cliente(db.Model):
     email = Column(String(150))
     telefono = Column(String(20))
     hora_ingreso = Column(String(10))
+    activo = Column(Boolean, default=True)
+    monto_pago = Column(Float, nullable=True)
+    metodo_pago = Column(String(50), nullable=True)
     habitacion_id = Column(Integer, ForeignKey("habitacion.id"), nullable=True)
 
     habitacion = relationship("Habitacion", back_populates="clientes")
+    pagos = relationship("Pago", back_populates="cliente")
 
     def __repr__(self):
         return self.nombre_completo
@@ -82,9 +86,11 @@ class Pago(db.Model):
     monto = Column(Float, nullable=False)
     metodo = Column(String(50), nullable=False)
     fecha = Column(Date, nullable=False)
-    reserva_id = Column(Integer, ForeignKey("reserva.id"), nullable=False)
+    reserva_id = Column(Integer, ForeignKey("reserva.id"), nullable=True)
+    cliente_id = Column(Integer, ForeignKey("cliente.id"), nullable=True)
 
     reserva = relationship("Reserva", back_populates="pagos")
+    cliente = relationship("Cliente", back_populates="pagos")
 
     def __repr__(self):
         return f"Pago #{self.id} - Bs {self.monto}"

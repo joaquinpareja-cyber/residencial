@@ -3,7 +3,7 @@
 {% block content %}
 <div class="container-fluid">
   <h2 class="page-header">
-    <i class="fa fa-money"></i> Reporte de Pagos por Reserva
+    <i class="fa fa-money"></i> Reporte de Pagos
   </h2>
 
   <div class="panel panel-default">
@@ -25,32 +25,62 @@
           <thead style="background-color:#3c3c3c; color:white;">
             <tr>
               <th># Pago</th>
-              <th># Reserva</th>
-              <th>Nombre Reservante</th>
+              <th>Origen</th>
+              <th>Nombre</th>
               <th>Habitación</th>
               <th>Monto (Bs)</th>
               <th>Método</th>
               <th>Fecha de Pago</th>
-              <th>Estado Reserva</th>
+              <th>Detalle</th>
             </tr>
           </thead>
           <tbody>
             {% for p in pagos %}
             <tr>
               <td>{{ p.id }}</td>
-              <td>{{ p.reserva.id }}</td>
-              <td>{{ p.reserva.nombre_reservante }}</td>
-              <td>Hab. {{ p.reserva.habitacion.numero }}</td>
+              <td>
+                {% if p.reserva %}
+                  <span class="label label-info">Reserva</span>
+                {% elif p.cliente %}
+                  <span class="label label-primary">Cliente</span>
+                {% else %}
+                  <span class="label label-default">Sin origen</span>
+                {% endif %}
+              </td>
+              <td>
+                {% if p.reserva %}
+                  {{ p.reserva.nombre_reservante }}
+                {% elif p.cliente %}
+                  {{ p.cliente.nombre_completo }}
+                {% else %}
+                  -
+                {% endif %}
+              </td>
+              <td>
+                {% if p.reserva and p.reserva.habitacion %}
+                  Hab. {{ p.reserva.habitacion.numero }}
+                {% elif p.cliente and p.cliente.habitacion %}
+                  Hab. {{ p.cliente.habitacion.numero }}
+                {% else %}
+                  -
+                {% endif %}
+              </td>
               <td><strong>{{ "%.2f"|format(p.monto) }}</strong></td>
               <td>{{ p.metodo }}</td>
               <td>{{ p.fecha }}</td>
               <td>
-                {% if p.reserva.estado == 'confirmada' %}
-                  <span class="label label-success">{{ p.reserva.estado }}</span>
-                {% elif p.reserva.estado == 'pendiente' %}
-                  <span class="label label-warning">{{ p.reserva.estado }}</span>
+                {% if p.reserva %}
+                  {% if p.reserva.estado == 'confirmada' %}
+                    <span class="label label-success">{{ p.reserva.estado }}</span>
+                  {% elif p.reserva.estado == 'pendiente' %}
+                    <span class="label label-warning">{{ p.reserva.estado }}</span>
+                  {% else %}
+                    <span class="label label-danger">{{ p.reserva.estado }}</span>
+                  {% endif %}
+                {% elif p.cliente %}
+                  <span class="label label-default">Cliente registrado</span>
                 {% else %}
-                  <span class="label label-danger">{{ p.reserva.estado }}</span>
+                  <span class="label label-default">Sin detalle</span>
                 {% endif %}
               </td>
             </tr>

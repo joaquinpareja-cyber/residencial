@@ -3,98 +3,105 @@
 {% block content %}
 <div class="container-fluid">
 
-  <h2 class="page-header">
+  <h2 class="page-header-re">
     <i class="fa fa-dashboard"></i> Panel de Control
     <small>Resumen del sistema</small>
   </h2>
 
-  <!-- ── Tarjetas de resumen ── -->
+  <!-- Acciones rápidas -->
+  <div class="quick-actions">
+    <a href="/clienteview/add" class="quick-action-btn quick-action-btn--success">
+      <i class="fa fa-user-plus"></i> Registrar Cliente
+    </a>
+    <a href="/reservaview/add" class="quick-action-btn quick-action-btn--primary">
+      <i class="fa fa-plus-circle"></i> Nueva Reserva
+    </a>
+    <a href="/habitaciones/visual/" class="quick-action-btn quick-action-btn--info">
+      <i class="fa fa-th-large"></i> Ver Habitaciones
+    </a>
+    <a href="/reportes/graficos/" class="quick-action-btn quick-action-btn--warning">
+      <i class="fa fa-bar-chart"></i> Reportes
+    </a>
+  </div>
+
+  <!-- Tarjetas de resumen -->
   <div class="row">
 
     <div class="col-xl-3 col-md-6 col-sm-6">
-      <div class="panel" style="background:#4e73df; color:white; border-radius:8px; padding:20px;">
-        <div style="display:flex; justify-content:space-between; align-items:center;">
+      <div class="stat-card stat-card--blue">
+        <div class="stat-card__inner">
           <div>
-            <div style="font-size:12px; font-weight:700; text-transform:uppercase; margin-bottom:4px;">Clientes Registrados</div>
-            <div style="font-size:36px; font-weight:700;">{{ total_clientes }}</div>
-            <div style="font-size:12px; opacity:0.8;">Hoy: {{ clientes_hoy }}</div>
+            <div class="stat-card__label">Clientes Registrados</div>
+            <div class="stat-card__value">{{ total_clientes }}</div>
+            <div class="stat-card__sub">Registrados hoy: {{ clientes_hoy }}</div>
           </div>
-          <i class="fa fa-users" style="font-size:40px; opacity:0.4;"></i>
+          <i class="fa fa-users stat-card__icon"></i>
         </div>
       </div>
     </div>
 
     <div class="col-xl-3 col-md-6 col-sm-6">
-      <div class="panel" style="background:#1cc88a; color:white; border-radius:8px; padding:20px;">
-        <div style="display:flex; justify-content:space-between; align-items:center;">
+      <div class="stat-card stat-card--green">
+        <div class="stat-card__inner">
           <div>
-            <div style="font-size:12px; font-weight:700; text-transform:uppercase; margin-bottom:4px;">Habitaciones Disponibles</div>
-            <div style="font-size:36px; font-weight:700;">{{ hab_disponibles }}</div>
-            <div style="font-size:12px; opacity:0.8;">Total: {{ total_habitaciones }}</div>
+            <div class="stat-card__label">Habitaciones Disponibles</div>
+            <div class="stat-card__value">{{ hab_disponibles }}</div>
+            <div class="stat-card__sub">Total: {{ total_habitaciones }}</div>
           </div>
-          <i class="fa fa-home" style="font-size:40px; opacity:0.4;"></i>
+          <i class="fa fa-home stat-card__icon"></i>
         </div>
       </div>
     </div>
 
     <div class="col-xl-3 col-md-6 col-sm-6">
-      <div class="panel" style="background:#e74a3b; color:white; border-radius:8px; padding:20px;">
-        <div style="display:flex; justify-content:space-between; align-items:center;">
+      <div class="stat-card stat-card--red">
+        <div class="stat-card__inner">
           <div>
-            <div style="font-size:12px; font-weight:700; text-transform:uppercase; margin-bottom:4px;">Reservas Pendientes</div>
-            <div style="font-size:36px; font-weight:700;">{{ reservas_pendientes }}</div>
-            <div style="font-size:12px; opacity:0.8;">Total: {{ total_reservas }}</div>
+            <div class="stat-card__label">Reservas Pendientes</div>
+            <div class="stat-card__value">{{ reservas_pendientes }}</div>
+            <div class="stat-card__sub">Total: {{ total_reservas }}</div>
           </div>
-          <i class="fa fa-calendar" style="font-size:40px; opacity:0.4;"></i>
+          <i class="fa fa-calendar stat-card__icon"></i>
         </div>
       </div>
     </div>
 
     <div class="col-xl-3 col-md-6 col-sm-6">
-      <div class="panel" style="background:#f6c23e; color:white; border-radius:8px; padding:20px;">
-        <div style="display:flex; justify-content:space-between; align-items:center;">
+      <div class="stat-card stat-card--yellow">
+        <div class="stat-card__inner">
           <div>
-            <div style="font-size:12px; font-weight:700; text-transform:uppercase; margin-bottom:4px;">Recaudado este Mes</div>
-            <div style="font-size:32px; font-weight:700;">Bs {{ "%.0f"|format(recaudado_mes) }}</div>
-            <div style="font-size:12px; opacity:0.8;">Total: Bs {{ "%.0f"|format(recaudado_total) }}</div>
+            <div class="stat-card__label">Recaudado este Mes</div>
+            <div class="stat-card__value" style="font-size:32px;">Bs {{ "%.0f"|format(recaudado_mes) }}</div>
+            <div class="stat-card__sub">Total: Bs {{ "%.0f"|format(recaudado_total) }}</div>
           </div>
-          <i class="fa fa-money" style="font-size:40px; opacity:0.4;"></i>
+          <i class="fa fa-money stat-card__icon"></i>
         </div>
       </div>
     </div>
 
   </div>
 
-  <!-- ── Estado de habitaciones + Reservas recientes ── -->
-  <div class="row" style="margin-top:20px;">
+  <!-- Estado de habitaciones + Reservas recientes -->
+  <div class="row">
 
-    <!-- Estado habitaciones -->
     <div class="col-md-5">
-      <div class="panel panel-default">
-        <div class="panel-heading" style="background:#3c3c3c; color:white;">
+      <div class="panel panel-default panel-re">
+        <div class="panel-heading">
           <i class="fa fa-home"></i> Estado de Habitaciones
         </div>
-        <div class="panel-body" style="padding:10px;">
+        <div class="panel-body">
           <div class="row">
             {% for h in habitaciones %}
-            <div class="col-xs-4" style="margin-bottom:10px;">
-              <div style="
-                border-radius:8px;
-                padding:10px 8px;
-                text-align:center;
-                color:white;
-                font-weight:bold;
-                font-size:13px;
-                background: {% if h.estado == 'disponible' %}#1cc88a{% elif h.estado == 'ocupada' %}#e74a3b{% else %}#f6c23e{% endif %};
-              ">
-                <div style="font-size:18px;">{{ h.numero }}</div>
-                <div style="font-size:10px; opacity:0.9;">{{ h.estado }}</div>
+            <div class="col-xs-4">
+              <div class="room-chip room-chip--{{ h.estado }}">
+                <div class="room-chip__num">{{ h.numero }}</div>
+                <div class="room-chip__est">{{ h.estado }}</div>
               </div>
             </div>
             {% endfor %}
           </div>
           <hr>
-          <div style="display:flex; gap:15px; font-size:12px;">
+          <div class="room-legend">
             <span><span style="color:#1cc88a;">■</span> Disponible ({{ hab_disponibles }})</span>
             <span><span style="color:#e74a3b;">■</span> Ocupada ({{ hab_ocupadas }})</span>
             <span><span style="color:#f6c23e;">■</span> Mantenimiento ({{ hab_mantenimiento }})</span>
@@ -103,15 +110,14 @@
       </div>
     </div>
 
-    <!-- Reservas recientes -->
     <div class="col-md-7">
-      <div class="panel panel-default">
-        <div class="panel-heading" style="background:#3c3c3c; color:white;">
+      <div class="panel panel-default panel-re">
+        <div class="panel-heading">
           <i class="fa fa-calendar"></i> Últimas Reservas
         </div>
-        <table class="table table-striped table-hover" style="margin:0;">
+        <table class="table table-striped table-hover table-re">
           <thead>
-            <tr style="background:#f8f8f8;">
+            <tr>
               <th>#</th>
               <th>Reservante</th>
               <th>Habitación</th>
@@ -125,15 +131,9 @@
               <td>{{ r.id }}</td>
               <td>{{ r.nombre_reservante }}</td>
               <td>Hab. {{ r.habitacion.numero }}</td>
-              <td>{{ r.fecha_entrada }}</td>
+              <td>{{ r.fecha_entrada.strftime('%d/%m/%Y') if r.fecha_entrada else '-' }}</td>
               <td>
-                {% if r.estado == 'confirmada' %}
-                  <span class="label label-success">{{ r.estado }}</span>
-                {% elif r.estado == 'pendiente' %}
-                  <span class="label label-warning">{{ r.estado }}</span>
-                {% else %}
-                  <span class="label label-danger">{{ r.estado }}</span>
-                {% endif %}
+                <span class="label-re label-re--{{ r.estado }}">{{ r.estado }}</span>
               </td>
             </tr>
             {% else %}
@@ -146,16 +146,16 @@
 
   </div>
 
-  <!-- ── Clientes recientes ── -->
-  <div class="row" style="margin-top:10px;">
+  <!-- Clientes recientes -->
+  <div class="row">
     <div class="col-md-12">
-      <div class="panel panel-default">
-        <div class="panel-heading" style="background:#3c3c3c; color:white;">
+      <div class="panel panel-default panel-re">
+        <div class="panel-heading">
           <i class="fa fa-users"></i> Últimos Clientes Registrados
         </div>
-        <table class="table table-striped table-hover" style="margin:0;">
+        <table class="table table-striped table-hover table-re">
           <thead>
-            <tr style="background:#f8f8f8;">
+            <tr>
               <th>Hora Ingreso</th>
               <th>Nombre Completo</th>
               <th>C.I.</th>

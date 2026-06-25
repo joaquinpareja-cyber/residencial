@@ -1,0 +1,51 @@
+{% extends "appbuilder/base.html" %}
+
+{% block navbar %}{% endblock %}
+{% block footer %}{% endblock %}
+
+{% block content %}
+<div class="login-page">
+  <div class="login-card">
+
+    <div class="login-card__header">
+      <img src="/static/img/LOGO.png" alt="Residencial El Expreso" class="login-card__logo">
+      <h1 class="login-card__title">RESIDENCIAL <span>EL EXPRESO</span></h1>
+      <p class="login-card__subtitle">Sistema de Gestión Hotelera</p>
+    </div>
+
+    <div class="login-card__body">
+      <form class="form" action="" method="post" name="login">
+        {{ form.hidden_tag() }}
+        <p style="color:#858796; font-size:13px; margin-bottom:20px;">
+          Ingrese su usuario y contraseña para acceder al sistema.
+        </p>
+
+        <div class="control-group{% if form.errors.username is defined %} error{% endif %}">
+          <label class="control-label" for="username">Usuario</label>
+          <div class="input-group">
+            <span class="input-group-addon"><i class="fa fa-user"></i></span>
+            {{ form.username(size=80, class="form-control", autofocus=true, placeholder="Nombre de usuario") }}
+          </div>
+          {% for error in form.errors.get('username', []) %}
+          <span class="help-inline text-danger">[{{ error }}]</span><br>
+          {% endfor %}
+        </div>
+
+        <div class="control-group{% if form.errors.password is defined %} error{% endif %}" style="margin-top:16px;">
+          <label class="control-label" for="password">Contraseña</label>
+          <div class="input-group">
+            <span class="input-group-addon"><i class="fa fa-key"></i></span>
+            {{ form.password(size=80, class="form-control", placeholder="Contraseña") }}
+          </div>
+          {% for error in form.errors.get('password', []) %}
+          <span class="help-inline text-danger">[{{ error }}]</span><br>
+          {% endfor %}
+        </div>
+
+        <input class="btn btn-primary login-btn" type="submit" value="Iniciar Sesión">
+      </form>
+    </div>
+
+  </div>
+</div>
+{% endblock %}
