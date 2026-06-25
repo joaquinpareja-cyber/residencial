@@ -7,9 +7,17 @@
   </h2>
 
   <div class="panel panel-default">
-    <div class="panel-heading">
-      <strong>Pagos registrados con detalle de reserva</strong>
-      <span class="badge pull-right">{{ pagos|length }} registros</span>
+    <div class="panel-heading" style="display:flex; justify-content:space-between; align-items:center;">
+      <strong>Pagos registrados</strong>
+      <div>
+        <span class="badge" style="margin-right:10px;">{{ pagos|length }} registros</span>
+        <a href="/exportar/pagos/pdf/" class="btn btn-danger btn-xs">
+          <i class="fa fa-file-pdf-o"></i> PDF
+        </a>
+        <a href="/exportar/pagos/excel/" class="btn btn-success btn-xs" style="margin-left:5px;">
+          <i class="fa fa-file-excel-o"></i> Excel
+        </a>
+      </div>
     </div>
     <div class="panel-body">
       <div class="table-responsive">

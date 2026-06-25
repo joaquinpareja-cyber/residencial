@@ -6,7 +6,7 @@ def create_app() -> Flask:
     app.config.from_object("config")
 
     # Redirigir al dashboard después del login
-    #app.config["FAB_INDEX_VIEW"] = "DashboardView"
+    app.config["FAB_INDEX_VIEW"] = "DashboardView"
 
     db.init_app(app)
 

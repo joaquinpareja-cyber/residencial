@@ -1,0 +1,17 @@
+{% extends "appbuilder/baselayout.html" %}
+
+{% block head_css %}
+  {{ super() }}
+  <link rel="stylesheet" href="/static/css/custom.css">
+{% endblock %}
+
+{% block brand %}
+  <a class="navbar-brand" href="/">
+    <img src="/static/img/LOGO.png" style="height:52px; margin-right:10px;">
+    <span style="color:white; font-size:18px; font-weight:800;">
+      RESIDENCIAL <span style="color:#4ade80;">EL EXPRESO</span>
+    </span>
+  </a>
+{% endblock %}
+
+{% block title %}Residencial El Expreso{% endblock %}

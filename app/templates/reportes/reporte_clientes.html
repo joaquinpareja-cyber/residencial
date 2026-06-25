@@ -1,0 +1,60 @@
+{% extends "appbuilder/base.html" %}
+
+{% block content %}
+<div class="container-fluid">
+  <h2 class="page-header">
+    <i class="fa fa-users"></i> Reporte de Clientes
+  </h2>
+
+  <div class="panel panel-default">
+    <div class="panel-heading" style="display:flex; justify-content:space-between; align-items:center;">
+      <strong>Clientes registrados</strong>
+      <div>
+        <span class="badge" style="margin-right:10px;">{{ clientes|length }} registros</span>
+        <a href="/exportar/clientes/pdf/" class="btn btn-danger btn-xs">
+          <i class="fa fa-file-pdf-o"></i> PDF
+        </a>
+        <a href="/exportar/clientes/excel/" class="btn btn-success btn-xs" style="margin-left:5px;">
+          <i class="fa fa-file-excel-o"></i> Excel
+        </a>
+      </div>
+    </div>
+    <div class="panel-body">
+      <div class="table-responsive">
+        <table class="table table-bordered table-striped table-hover">
+          <thead style="background-color:#3c3c3c; color:white;">
+            <tr>
+              <th>Hora Ingreso</th>
+              <th>Nombre Completo</th>
+              <th>C.I.</th>
+              <th>Nacionalidad</th>
+              <th>Procedencia</th>
+              <th>Profesión</th>
+              <th>Estado Civil</th>
+              <th>Teléfono</th>
+              <th>Habitación</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for c in clientes %}
+            <tr>
+              <td>{{ c.hora_ingreso or '-' }}</td>
+              <td>{{ c.nombre_completo }}</td>
+              <td>{{ c.ci }}</td>
+              <td>{{ c.nacionalidad or '-' }}</td>
+              <td>{{ c.procedencia or '-' }}</td>
+              <td>{{ c.profesion or '-' }}</td>
+              <td>{{ c.estado_civil or '-' }}</td>
+              <td>{{ c.telefono or '-' }}</td>
+              <td>{{ 'Hab. ' + c.habitacion.numero if c.habitacion else '-' }}</td>
+            </tr>
+            {% else %}
+            <tr><td colspan="9" class="text-center text-muted">Sin registros</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
