@@ -17,7 +17,7 @@
           <thead style="background-color:#3c3c3c; color:white;">
             <tr>
               <th># Reserva</th>
-              <th>Cliente</th>
+              <th>Nombre Reservante</th>
               <th>Habitación</th>
               <th>Servicio</th>
               <th>Precio Unit. (Bs)</th>
@@ -29,7 +29,7 @@
             {% for i in items %}
             <tr>
               <td>{{ i.reserva.id }}</td>
-              <td>{{ i.reserva.cliente.nombre }}</td>
+              <td>{{ i.reserva.nombre_reservante }}</td>
               <td>Hab. {{ i.reserva.habitacion.numero }}</td>
               <td>{{ i.servicio.nombre }}</td>
               <td>{{ "%.2f"|format(i.servicio.precio) }}</td>

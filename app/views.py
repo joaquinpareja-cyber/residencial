@@ -1,12 +1,45 @@
 from flask_appbuilder import ModelView, BaseView, expose
 from flask_appbuilder.models.sqla.interface import SQLAInterface
+from flask_appbuilder.fieldwidgets import Select2Widget
+from flask_appbuilder.models.sqla.filters import FilterEqual
+from wtforms import SelectField
+from wtforms.validators import DataRequired
 from sqlalchemy import func
+from datetime import date
 
 from .extensions import appbuilder, db
 from .models import (
     TipoHabitacion, Habitacion, Cliente,
     Reserva, Pago, Servicio, ReservaServicio
 )
+
+# ── Opciones para los desplegables ───────────────────────────────────────────
+ESTADO_CIVIL_CHOICES = [
+    ("Soltero/a", "Soltero/a"),
+    ("Casado/a", "Casado/a"),
+    ("Divorciado/a", "Divorciado/a"),
+    ("Viudo/a", "Viudo/a"),
+    ("Unión Libre", "Unión Libre"),
+]
+
+ESTADO_RESERVA_CHOICES = [
+    ("pendiente", "Pendiente"),
+    ("confirmada", "Confirmada"),
+    ("cancelada", "Cancelada"),
+]
+
+METODO_PAGO_CHOICES = [
+    ("Efectivo", "Efectivo"),
+    ("Tarjeta", "Tarjeta"),
+    ("Transferencia", "Transferencia"),
+    ("QR", "QR"),
+]
+
+ESTADO_HABITACION_CHOICES = [
+    ("disponible", "Disponible"),
+    ("ocupada", "Ocupada"),
+    ("mantenimiento", "Mantenimiento"),
+]
 
 
 class TipoHabitacionView(ModelView):
@@ -35,33 +68,96 @@ class HabitacionView(ModelView):
     edit_columns = ["numero", "tipo", "precio_noche", "estado"]
     show_columns = ["numero", "tipo", "precio_noche", "estado"]
 
+    add_form_extra_fields = {
+        "estado": SelectField(
+            "Estado",
+            choices=ESTADO_HABITACION_CHOICES,
+            widget=Select2Widget(),
+        )
+    }
+    edit_form_extra_fields = add_form_extra_fields
+
 
 class ClienteView(ModelView):
     datamodel = SQLAInterface(Cliente)
     label_columns = {
-        "nombre": "Nombre completo",
-        "email": "Correo electrónico",
+        "hora_ingreso": "Hora de Ingreso",
+        "nombre_completo": "Nombre Completo",
+        "procedencia": "Procedencia",
+        "nacionalidad": "Nacionalidad",
+        "profesion": "Profesión",
+        "ci": "C.I.",
+        "fecha_nacimiento": "Fecha de Nacimiento",
+        "estado_civil": "Estado Civil",
+        "email": "Correo Electrónico",
         "telefono": "Teléfono",
+        "habitacion": "Habitación Asignada",
     }
-    list_columns = ["nombre", "email", "telefono"]
-    add_columns  = ["nombre", "email", "telefono"]
-    edit_columns = ["nombre", "email", "telefono"]
-    show_columns = ["nombre", "email", "telefono"]
+    list_columns = [
+        "hora_ingreso", "nombre_completo", "ci",
+        "procedencia", "nacionalidad", "habitacion"
+    ]
+    add_columns  = [
+        "hora_ingreso", "nombre_completo", "procedencia",
+        "nacionalidad", "profesion", "ci", "fecha_nacimiento",
+        "estado_civil", "email", "telefono", "habitacion",
+    ]
+    edit_columns = [
+        "hora_ingreso", "nombre_completo", "procedencia",
+        "nacionalidad", "profesion", "ci", "fecha_nacimiento",
+        "estado_civil", "email", "telefono", "habitacion",
+    ]
+    show_columns = [
+        "hora_ingreso", "nombre_completo", "procedencia",
+        "nacionalidad", "profesion", "ci", "fecha_nacimiento",
+        "estado_civil", "email", "telefono", "habitacion",
+    ]
+
+    add_form_extra_fields = {
+        "estado_civil": SelectField(
+            "Estado Civil",
+            choices=ESTADO_CIVIL_CHOICES,
+            widget=Select2Widget(),
+        )
+    }
+    edit_form_extra_fields = add_form_extra_fields
 
 
 class ReservaView(ModelView):
     datamodel = SQLAInterface(Reserva)
     label_columns = {
-        "cliente": "Cliente",
+        "nombre_reservante": "Nombre del Reservante",
+        "telefono_contacto": "Teléfono de Contacto",
         "habitacion": "Habitación",
-        "fecha_entrada": "Fecha de entrada",
-        "fecha_salida": "Fecha de salida",
+        "fecha_entrada": "Fecha de Entrada",
+        "fecha_salida": "Fecha de Salida",
         "estado": "Estado",
     }
-    list_columns = ["cliente", "habitacion", "fecha_entrada", "fecha_salida", "estado"]
-    add_columns  = ["cliente", "habitacion", "fecha_entrada", "fecha_salida", "estado"]
-    edit_columns = ["cliente", "habitacion", "fecha_entrada", "fecha_salida", "estado"]
-    show_columns = ["cliente", "habitacion", "fecha_entrada", "fecha_salida", "estado"]
+    list_columns = [
+        "nombre_reservante", "telefono_contacto",
+        "habitacion", "fecha_entrada", "fecha_salida", "estado"
+    ]
+    add_columns  = [
+        "nombre_reservante", "telefono_contacto",
+        "habitacion", "fecha_entrada", "fecha_salida", "estado"
+    ]
+    edit_columns = [
+        "nombre_reservante", "telefono_contacto",
+        "habitacion", "fecha_entrada", "fecha_salida", "estado"
+    ]
+    show_columns = [
+        "nombre_reservante", "telefono_contacto",
+        "habitacion", "fecha_entrada", "fecha_salida", "estado"
+    ]
+
+    add_form_extra_fields = {
+        "estado": SelectField(
+            "Estado",
+            choices=ESTADO_RESERVA_CHOICES,
+            widget=Select2Widget(),
+        )
+    }
+    edit_form_extra_fields = add_form_extra_fields
 
 
 class PagoView(ModelView):
@@ -76,6 +172,15 @@ class PagoView(ModelView):
     add_columns  = ["reserva", "monto", "metodo", "fecha"]
     edit_columns = ["reserva", "monto", "metodo", "fecha"]
     show_columns = ["reserva", "monto", "metodo", "fecha"]
+
+    add_form_extra_fields = {
+        "metodo": SelectField(
+            "Método de Pago",
+            choices=METODO_PAGO_CHOICES,
+            widget=Select2Widget(),
+        )
+    }
+    edit_form_extra_fields = add_form_extra_fields
 
 
 class ServicioView(ModelView):
@@ -101,6 +206,85 @@ class ReservaServicioView(ModelView):
     add_columns  = ["reserva", "servicio", "cantidad"]
     edit_columns = ["reserva", "servicio", "cantidad"]
     show_columns = ["reserva", "servicio", "cantidad"]
+
+
+# ── Dashboard ─────────────────────────────────────────────────────────────────
+
+class DashboardView(BaseView):
+    route_base = "/dashboard"
+    default_view = "index"
+
+    @expose("/")
+    def index(self):
+        hoy = date.today()
+
+        total_clientes = Cliente.query.count()
+        clientes_hoy = Cliente.query.count()
+
+        total_habitaciones = Habitacion.query.count()
+        hab_disponibles = Habitacion.query.filter_by(estado="disponible").count()
+        hab_ocupadas = Habitacion.query.filter_by(estado="ocupada").count()
+        hab_mantenimiento = Habitacion.query.filter_by(estado="mantenimiento").count()
+        habitaciones = Habitacion.query.all()
+
+        total_reservas = Reserva.query.count()
+        reservas_pendientes = Reserva.query.filter_by(estado="pendiente").count()
+        ultimas_reservas = Reserva.query.order_by(Reserva.id.desc()).limit(5).all()
+
+        recaudado_total = db.session.query(func.sum(Pago.monto)).scalar() or 0
+        recaudado_mes = db.session.query(func.sum(Pago.monto)).filter(
+            func.month(Pago.fecha) == hoy.month,
+            func.year(Pago.fecha) == hoy.year
+        ).scalar() or 0
+
+        ultimos_clientes = Cliente.query.order_by(Cliente.id.desc()).limit(5).all()
+
+        return self.render_template(
+            "dashboard.html",
+            total_clientes=total_clientes,
+            clientes_hoy=clientes_hoy,
+            total_habitaciones=total_habitaciones,
+            hab_disponibles=hab_disponibles,
+            hab_ocupadas=hab_ocupadas,
+            hab_mantenimiento=hab_mantenimiento,
+            habitaciones=habitaciones,
+            total_reservas=total_reservas,
+            reservas_pendientes=reservas_pendientes,
+            ultimas_reservas=ultimas_reservas,
+            recaudado_total=recaudado_total,
+            recaudado_mes=recaudado_mes,
+            ultimos_clientes=ultimos_clientes,
+        )
+
+
+# ── Vista visual de habitaciones ─────────────────────────────────────────────
+
+class HabitacionesVisualView(BaseView):
+    route_base = "/habitaciones/visual"
+
+    @expose("/")
+    def index(self):
+        habitaciones = Habitacion.query.order_by(Habitacion.numero).all()
+
+        # Agrupar por tipo
+        habitaciones_por_tipo = {}
+        for h in habitaciones:
+            tipo = h.tipo.nombre
+            if tipo not in habitaciones_por_tipo:
+                habitaciones_por_tipo[tipo] = []
+            habitaciones_por_tipo[tipo].append(h)
+
+        disponibles   = sum(1 for h in habitaciones if h.estado == "disponible")
+        ocupadas      = sum(1 for h in habitaciones if h.estado == "ocupada")
+        mantenimiento = sum(1 for h in habitaciones if h.estado == "mantenimiento")
+
+        return self.render_template(
+            "habitaciones_visual.html",
+            habitaciones_por_tipo=habitaciones_por_tipo,
+            disponibles=disponibles,
+            ocupadas=ocupadas,
+            mantenimiento=mantenimiento,
+        )
 
 
 # ── Reportes ─────────────────────────────────────────────────────────────────
@@ -143,16 +327,13 @@ class ReporteGraficos(BaseView):
 
     @expose("/")
     def index(self):
-        # Reservas agrupadas por estado
         reservas_estado = [
-            {"estado": r.estado, "cantidad": c}
-            for r, c in (
-                db.session.query(Reserva, func.count(Reserva.id))
+            {"estado": estado, "cantidad": c}
+            for estado, c in (
+                db.session.query(Reserva.estado, func.count(Reserva.id))
                 .group_by(Reserva.estado).all()
             )
         ]
-
-        # Habitaciones agrupadas por tipo
         habitaciones_tipo = [
             {"tipo": t.nombre, "cantidad": c}
             for t, c in (
@@ -161,8 +342,6 @@ class ReporteGraficos(BaseView):
                 .group_by(TipoHabitacion.nombre).all()
             )
         ]
-
-        # Total recaudado por método de pago
         pagos_metodo = [
             {"metodo": metodo, "total": round(float(total), 2)}
             for metodo, total in (
@@ -170,8 +349,6 @@ class ReporteGraficos(BaseView):
                 .group_by(Pago.metodo).all()
             )
         ]
-
-        # Servicios más consumidos (suma de cantidades)
         servicios_consumo = [
             {"servicio": s.nombre, "total": int(total)}
             for s, total in (
@@ -180,7 +357,6 @@ class ReporteGraficos(BaseView):
                 .group_by(Servicio.nombre).all()
             )
         ]
-
         return self.render_template(
             "reportes/reporte_graficos.html",
             reservas_estado=reservas_estado,
@@ -192,12 +368,23 @@ class ReporteGraficos(BaseView):
 
 # ── Registro en el menú ──────────────────────────────────────────────────────
 appbuilder.add_view(
+    DashboardView, "Inicio",
+    icon="fa-dashboard", category="",
+)
+appbuilder.add_view(
     TipoHabitacionView, "Tipos de Habitación",
     icon="fa-bed", category="Habitaciones",
 )
 appbuilder.add_view(
     HabitacionView, "Habitaciones",
     icon="fa-home", category="Habitaciones",
+)
+appbuilder.add_view_no_menu(HabitacionesVisualView)
+appbuilder.add_link(
+    "Vista Visual",
+    href="/habitaciones/visual/",
+    icon="fa-th-large",
+    category="Habitaciones",
 )
 appbuilder.add_view(
     ClienteView, "Clientes",

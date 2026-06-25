@@ -8,16 +8,16 @@
 
   <div class="panel panel-default">
     <div class="panel-heading">
-      <strong>Reservas con Cliente y Habitación</strong>
+      <strong>Reservas con Habitación</strong>
       <span class="badge pull-right">{{ reservas|length }} registros</span>
     </div>
     <div class="panel-body">
       <div class="table-responsive">
         <table class="table table-bordered table-striped table-hover">
-          <thead class="thead-dark" style="background-color:#3c3c3c; color:white;">
+          <thead style="background-color:#3c3c3c; color:white;">
             <tr>
               <th>#</th>
-              <th>Cliente</th>
+              <th>Nombre Reservante</th>
               <th>Teléfono</th>
               <th>Habitación</th>
               <th>Tipo</th>
@@ -31,8 +31,8 @@
             {% for r in reservas %}
             <tr>
               <td>{{ r.id }}</td>
-              <td>{{ r.cliente.nombre }}</td>
-              <td>{{ r.cliente.telefono or '-' }}</td>
+              <td>{{ r.nombre_reservante }}</td>
+              <td>{{ r.telefono_contacto or '-' }}</td>
               <td>Hab. {{ r.habitacion.numero }}</td>
               <td>{{ r.habitacion.tipo.nombre }}</td>
               <td>{{ "%.2f"|format(r.habitacion.precio_noche) }}</td>

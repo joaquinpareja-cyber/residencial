@@ -27,6 +27,7 @@ class Habitacion(db.Model):
     tipo_id = Column(Integer, ForeignKey("tipo_habitacion.id"), nullable=False)
 
     tipo = relationship("TipoHabitacion", back_populates="habitaciones")
+    clientes = relationship("Cliente", back_populates="habitacion")
     reservas = relationship("Reserva", back_populates="habitacion")
 
     def __repr__(self):
@@ -37,33 +38,41 @@ class Cliente(db.Model):
     __tablename__ = "cliente"
 
     id = Column(Integer, primary_key=True)
-    nombre = Column(String(150), nullable=False)
-    email = Column(String(150), unique=True)
+    nombre_completo = Column(String(200), nullable=False)
+    ci = Column(String(20), nullable=False, unique=True)
+    fecha_nacimiento = Column(Date)
+    nacionalidad = Column(String(100))
+    procedencia = Column(String(150))
+    profesion = Column(String(100))
+    estado_civil = Column(String(50))
+    email = Column(String(150))
     telefono = Column(String(20))
+    hora_ingreso = Column(String(10))
+    habitacion_id = Column(Integer, ForeignKey("habitacion.id"), nullable=True)
 
-    reservas = relationship("Reserva", back_populates="cliente")
+    habitacion = relationship("Habitacion", back_populates="clientes")
 
     def __repr__(self):
-        return self.nombre
+        return self.nombre_completo
 
 
 class Reserva(db.Model):
     __tablename__ = "reserva"
 
     id = Column(Integer, primary_key=True)
+    nombre_reservante = Column(String(200), nullable=False)
+    telefono_contacto = Column(String(20))
     fecha_entrada = Column(Date, nullable=False)
     fecha_salida = Column(Date, nullable=False)
     estado = Column(String(50), default="pendiente")
-    cliente_id = Column(Integer, ForeignKey("cliente.id"), nullable=False)
     habitacion_id = Column(Integer, ForeignKey("habitacion.id"), nullable=False)
 
-    cliente = relationship("Cliente", back_populates="reservas")
     habitacion = relationship("Habitacion", back_populates="reservas")
     pagos = relationship("Pago", back_populates="reserva")
     servicios = relationship("ReservaServicio", back_populates="reserva")
 
     def __repr__(self):
-        return f"Reserva #{self.id}"
+        return f"Reserva #{self.id} - {self.nombre_reservante}"
 
 
 class Pago(db.Model):

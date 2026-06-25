@@ -18,7 +18,7 @@
             <tr>
               <th># Pago</th>
               <th># Reserva</th>
-              <th>Cliente</th>
+              <th>Nombre Reservante</th>
               <th>Habitación</th>
               <th>Monto (Bs)</th>
               <th>Método</th>
@@ -31,7 +31,7 @@
             <tr>
               <td>{{ p.id }}</td>
               <td>{{ p.reserva.id }}</td>
-              <td>{{ p.reserva.cliente.nombre }}</td>
+              <td>{{ p.reserva.nombre_reservante }}</td>
               <td>Hab. {{ p.reserva.habitacion.numero }}</td>
               <td><strong>{{ "%.2f"|format(p.monto) }}</strong></td>
               <td>{{ p.metodo }}</td>
