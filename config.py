@@ -23,10 +23,10 @@ CSRF_ENABLED = True
 # GLOBALS FOR APP Builder
 # ------------------------------
 # Uncomment to setup Your App name
-# APP_NAME = "My App Name"
+APP_NAME = "Residencial El Expreso"
 
 # Uncomment to setup Setup an App icon
-# APP_ICON = "static/img/logo.jpg"
+APP_ICON = "/static/img/LOGO.png"
 
 # ----------------------------------------------------
 # AUTHENTICATION CONFIG

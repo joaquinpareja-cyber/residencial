@@ -208,6 +208,28 @@ class ReservaServicioView(ModelView):
     show_columns = ["reserva", "servicio", "cantidad"]
 
 
+# ── Index personalizado ──────────────────────────────────────────────────────
+
+class CustomIndexView(BaseView):
+    route_base = "/"
+    default_view = "index"
+
+    @expose("/")
+    def index(self):
+        from sqlalchemy import func
+        total_clientes = Cliente.query.count()
+        hab_disponibles = Habitacion.query.filter_by(estado="disponible").count()
+        reservas_pendientes = Reserva.query.filter_by(estado="pendiente").count()
+        recaudado_total = db.session.query(func.sum(Pago.monto)).scalar() or 0
+        return self.render_template(
+            "appbuilder/index.html",
+            total_clientes=total_clientes,
+            hab_disponibles=hab_disponibles,
+            reservas_pendientes=reservas_pendientes,
+            recaudado_total=int(recaudado_total),
+        )
+
+
 # ── Dashboard ─────────────────────────────────────────────────────────────────
 
 class DashboardView(BaseView):
@@ -289,6 +311,15 @@ class HabitacionesVisualView(BaseView):
 
 # ── Reportes ─────────────────────────────────────────────────────────────────
 
+class ReporteClientes(BaseView):
+    route_base = "/reportes/clientes"
+
+    @expose("/")
+    def index(self):
+        clientes = Cliente.query.all()
+        return self.render_template("reportes/reporte_clientes.html", clientes=clientes)
+
+
 class ReporteReservas(BaseView):
     route_base = "/reportes/reservas"
 
@@ -367,6 +398,7 @@ class ReporteGraficos(BaseView):
 
 
 # ── Registro en el menú ──────────────────────────────────────────────────────
+appbuilder.add_view_no_menu(CustomIndexView)
 appbuilder.add_view(
     DashboardView, "Inicio",
     icon="fa-dashboard", category="",
@@ -406,11 +438,18 @@ appbuilder.add_view(
     ReservaServicioView, "Servicios por Reserva",
     icon="fa-list", category="Catálogos",
 )
+appbuilder.add_view_no_menu(ReporteClientes)
 appbuilder.add_view_no_menu(ReporteReservas)
 appbuilder.add_view_no_menu(ReportePagos)
 appbuilder.add_view_no_menu(ReporteServicios)
 appbuilder.add_view_no_menu(ReporteGraficos)
 
+appbuilder.add_link(
+    "Clientes",
+    href="/reportes/clientes/",
+    icon="fa-users",
+    category="Reportes",
+)
 appbuilder.add_link(
     "Reservas Detalladas",
     href="/reportes/reservas/",
@@ -435,3 +474,7 @@ appbuilder.add_link(
     icon="fa-bar-chart",
     category="Reportes",
 )
+
+# Exportaciones
+from .exports import register_exports
+register_exports()

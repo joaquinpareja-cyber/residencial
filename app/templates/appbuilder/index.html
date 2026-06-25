@@ -1,0 +1,207 @@
+{% extends "appbuilder/baselayout.html" %}
+
+{% block content %}
+
+<style>
+  .hero {
+    background: linear-gradient(135deg, #1a1a5e 0%, #2d2d8f 50%, #1a6e3c 100%);
+    min-height: 340px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 40px 20px;
+    position: relative;
+    overflow: hidden;
+  }
+  .hero::before {
+    content: "";
+    position: absolute;
+    top: -60px; right: -60px;
+    width: 300px; height: 300px;
+    background: rgba(255,255,255,0.04);
+    border-radius: 50%;
+  }
+  .hero::after {
+    content: "";
+    position: absolute;
+    bottom: -80px; left: -40px;
+    width: 250px; height: 250px;
+    background: rgba(255,255,255,0.03);
+    border-radius: 50%;
+  }
+  .hero-content { position: relative; z-index: 1; }
+  .hero-logo { width: 130px; margin-bottom: 18px; filter: drop-shadow(0 4px 12px rgba(0,0,0,0.4)); }
+  .hero-title {
+    color: white;
+    font-size: 38px;
+    font-weight: 800;
+    margin: 0 0 6px 0;
+    letter-spacing: 1px;
+    text-shadow: 0 2px 8px rgba(0,0,0,0.3);
+  }
+  .hero-title span { color: #4ade80; }
+  .hero-subtitle {
+    color: rgba(255,255,255,0.75);
+    font-size: 15px;
+    margin: 0 0 28px 0;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+  }
+  .hero-stars { color: #facc15; font-size: 22px; margin-bottom: 28px; }
+  .hero-btn {
+    display: inline-block;
+    background: white;
+    color: #1a1a5e;
+    font-weight: 700;
+    font-size: 15px;
+    padding: 12px 32px;
+    border-radius: 30px;
+    text-decoration: none;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+    transition: all 0.2s;
+    margin: 5px;
+  }
+  .hero-btn:hover { background: #4ade80; color: #1a1a5e; text-decoration: none; transform: translateY(-2px); }
+  .hero-btn-outline {
+    background: transparent;
+    color: white;
+    border: 2px solid rgba(255,255,255,0.6);
+  }
+  .hero-btn-outline:hover { background: white; color: #1a1a5e; }
+
+  .accesos { padding: 40px 30px 20px; }
+  .acceso-card {
+    border-radius: 12px;
+    padding: 28px 20px;
+    text-align: center;
+    color: white;
+    margin-bottom: 20px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+    transition: transform 0.2s, box-shadow 0.2s;
+    display: block;
+    text-decoration: none;
+  }
+  .acceso-card:hover { transform: translateY(-5px); box-shadow: 0 8px 25px rgba(0,0,0,0.2); text-decoration: none; color: white; }
+  .acceso-card i { font-size: 38px; margin-bottom: 12px; display: block; opacity: 0.9; }
+  .acceso-card h4 { font-size: 16px; font-weight: 700; margin: 0 0 6px 0; }
+  .acceso-card p { font-size: 12px; opacity: 0.85; margin: 0; }
+
+  .info-strip {
+    background: #f8f9fa;
+    border-top: 1px solid #eee;
+    padding: 25px 30px;
+  }
+  .info-item { text-align: center; padding: 10px; }
+  .info-item .num { font-size: 32px; font-weight: 800; color: #1a1a5e; }
+  .info-item .label { font-size: 12px; color: #888; text-transform: uppercase; letter-spacing: 1px; }
+
+  .footer-strip {
+    background: #1a1a5e;
+    color: rgba(255,255,255,0.6);
+    text-align: center;
+    font-size: 12px;
+    padding: 14px;
+  }
+</style>
+
+<!-- Hero -->
+<div class="hero">
+  <div class="hero-content">
+    <img src="/static/img/LOGO.png" class="hero-logo">
+    <h1 class="hero-title">RESIDENCIAL <span>EL EXPRESO</span></h1>
+    <p class="hero-subtitle">Sistema de Gestión de Alojamiento</p>
+    <div class="hero-stars">★ ★</div>
+    <a href="/dashboard/" class="hero-btn">
+      <i class="fa fa-dashboard"></i> Ir al Panel de Control
+    </a>
+    <a href="/clienteview/add" class="hero-btn hero-btn-outline">
+      <i class="fa fa-user-plus"></i> Registrar Cliente
+    </a>
+  </div>
+</div>
+
+<!-- Accesos rápidos -->
+<div class="accesos">
+  <div class="row">
+    <div class="col-md-2 col-sm-4 col-xs-6">
+      <a href="/clienteview/list/" class="acceso-card" style="background:linear-gradient(135deg,#4e73df,#2e59d9);">
+        <i class="fa fa-users"></i>
+        <h4>Clientes</h4>
+        <p>Registro de huéspedes</p>
+      </a>
+    </div>
+    <div class="col-md-2 col-sm-4 col-xs-6">
+      <a href="/reservaview/list/" class="acceso-card" style="background:linear-gradient(135deg,#e74a3b,#c0392b);">
+        <i class="fa fa-calendar"></i>
+        <h4>Reservas</h4>
+        <p>Gestión de reservas</p>
+      </a>
+    </div>
+    <div class="col-md-2 col-sm-4 col-xs-6">
+      <a href="/habitaciones/visual/" class="acceso-card" style="background:linear-gradient(135deg,#1cc88a,#13855c);">
+        <i class="fa fa-home"></i>
+        <h4>Habitaciones</h4>
+        <p>Estado en tiempo real</p>
+      </a>
+    </div>
+    <div class="col-md-2 col-sm-4 col-xs-6">
+      <a href="/pagoview/list/" class="acceso-card" style="background:linear-gradient(135deg,#f6c23e,#d4a017);">
+        <i class="fa fa-money"></i>
+        <h4>Pagos</h4>
+        <p>Registro de cobros</p>
+      </a>
+    </div>
+    <div class="col-md-2 col-sm-4 col-xs-6">
+      <a href="/reportes/graficos/" class="acceso-card" style="background:linear-gradient(135deg,#36b9cc,#258391);">
+        <i class="fa fa-bar-chart"></i>
+        <h4>Gráficos</h4>
+        <p>Estadísticas visuales</p>
+      </a>
+    </div>
+    <div class="col-md-2 col-sm-4 col-xs-6">
+      <a href="/reportes/clientes/" class="acceso-card" style="background:linear-gradient(135deg,#858796,#5a5c69);">
+        <i class="fa fa-file-text"></i>
+        <h4>Reportes</h4>
+        <p>Informes del sistema</p>
+      </a>
+    </div>
+  </div>
+</div>
+
+<!-- Franja info -->
+<div class="info-strip">
+  <div class="row">
+    <div class="col-md-3 col-sm-6">
+      <div class="info-item">
+        <div class="num">{{ total_clientes }}</div>
+        <div class="label">Clientes Registrados</div>
+      </div>
+    </div>
+    <div class="col-md-3 col-sm-6">
+      <div class="info-item">
+        <div class="num">{{ hab_disponibles }}</div>
+        <div class="label">Habitaciones Disponibles</div>
+      </div>
+    </div>
+    <div class="col-md-3 col-sm-6">
+      <div class="info-item">
+        <div class="num">{{ reservas_pendientes }}</div>
+        <div class="label">Reservas Pendientes</div>
+      </div>
+    </div>
+    <div class="col-md-3 col-sm-6">
+      <div class="info-item">
+        <div class="num">Bs {{ recaudado_total }}</div>
+        <div class="label">Total Recaudado</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Footer -->
+<div class="footer-strip">
+  © 2026 Residencial El Expreso &nbsp;|&nbsp; Sistema de Gestión de Alojamiento
+</div>
+
+{% endblock %}

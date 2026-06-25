@@ -7,9 +7,17 @@
   </h2>
 
   <div class="panel panel-default">
-    <div class="panel-heading">
+    <div class="panel-heading" style="display:flex; justify-content:space-between; align-items:center;">
       <strong>Reservas con Habitación</strong>
-      <span class="badge pull-right">{{ reservas|length }} registros</span>
+      <div>
+        <span class="badge" style="margin-right:10px;">{{ reservas|length }} registros</span>
+        <a href="/exportar/reservas/pdf/" class="btn btn-danger btn-xs">
+          <i class="fa fa-file-pdf-o"></i> PDF
+        </a>
+        <a href="/exportar/reservas/excel/" class="btn btn-success btn-xs" style="margin-left:5px;">
+          <i class="fa fa-file-excel-o"></i> Excel
+        </a>
+      </div>
     </div>
     <div class="panel-body">
       <div class="table-responsive">
