@@ -5,7 +5,7 @@ from flask_appbuilder.models.sqla.filters import FilterEqual
 from wtforms import SelectField
 from wtforms.validators import DataRequired
 from sqlalchemy import func
-from datetime import date
+from datetime import date, datetime
 
 from .extensions import appbuilder, db
 from .models import (
@@ -40,6 +40,33 @@ ESTADO_HABITACION_CHOICES = [
     ("ocupada", "Ocupada"),
     ("mantenimiento", "Mantenimiento"),
 ]
+
+
+def reservas_en_conflicto(habitacion_id, fecha_entrada, fecha_salida, exclude_reserva_id=None):
+    """Reservas activas que solapan con el rango [entrada, salida)."""
+    if not habitacion_id or not fecha_entrada or not fecha_salida:
+        return []
+    if fecha_salida <= fecha_entrada:
+        return []
+
+    q = db.session.query(Reserva).filter(
+        Reserva.habitacion_id == habitacion_id,
+        Reserva.estado != "cancelada",
+        Reserva.fecha_entrada < fecha_salida,
+        Reserva.fecha_salida > fecha_entrada,
+    )
+    if exclude_reserva_id:
+        q = q.filter(Reserva.id != exclude_reserva_id)
+    return q.all()
+
+
+def mensaje_conflicto_reserva(conflictos):
+    detalle = "; ".join(
+        f"#{r.id} {r.nombre_reservante} "
+        f"({r.fecha_entrada.strftime('%d/%m/%Y')} - {r.fecha_salida.strftime('%d/%m/%Y')})"
+        for r in conflictos
+    )
+    return f"La habitación ya está ocupada en esas fechas: {detalle}"
 
 
 class TipoHabitacionView(ModelView):
@@ -159,6 +186,28 @@ class ReservaView(ModelView):
     }
     edit_form_extra_fields = add_form_extra_fields
 
+    add_template  = "reserva_form_add.html"
+    edit_template = "reserva_form.html"
+
+    def _validar_disponibilidad(self, item, exclude_reserva_id=None):
+        if item.fecha_salida <= item.fecha_entrada:
+            raise Exception("La fecha de salida debe ser posterior a la fecha de entrada.")
+
+        conflictos = reservas_en_conflicto(
+            item.habitacion_id,
+            item.fecha_entrada,
+            item.fecha_salida,
+            exclude_reserva_id=exclude_reserva_id,
+        )
+        if conflictos:
+            raise Exception(mensaje_conflicto_reserva(conflictos))
+
+    def pre_add(self, item):
+        self._validar_disponibilidad(item)
+
+    def pre_update(self, item):
+        self._validar_disponibilidad(item, exclude_reserva_id=item.id)
+
 
 class PagoView(ModelView):
     datamodel = SQLAInterface(Pago)
@@ -206,6 +255,69 @@ class ReservaServicioView(ModelView):
     add_columns  = ["reserva", "servicio", "cantidad"]
     edit_columns = ["reserva", "servicio", "cantidad"]
     show_columns = ["reserva", "servicio", "cantidad"]
+
+
+# ── API de precios ───────────────────────────────────────────────────────────
+
+from flask import jsonify, request
+
+class HabitacionesPreciosAPI(BaseView):
+    route_base = "/api/habitaciones_precios"
+
+    @expose("/")
+    def index(self):
+        habitaciones = Habitacion.query.all()
+        data = {
+            str(h.id): {
+                "numero": h.numero,
+                "tipo": h.tipo.nombre,
+                "precio": h.precio_noche,
+            }
+            for h in habitaciones
+        }
+        return jsonify(data)
+
+
+class ReservaDisponibilidadAPI(BaseView):
+    route_base = "/api/reserva_disponibilidad"
+
+    @expose("/")
+    def index(self):
+        habitacion_id = request.args.get("habitacion_id", type=int)
+        fecha_entrada = request.args.get("fecha_entrada")
+        fecha_salida = request.args.get("fecha_salida")
+        exclude_id = request.args.get("exclude_id", type=int)
+
+        if not habitacion_id or not fecha_entrada or not fecha_salida:
+            return jsonify({"disponible": True, "conflictos": []})
+
+        try:
+            entrada = datetime.strptime(fecha_entrada, "%Y-%m-%d").date()
+            salida = datetime.strptime(fecha_salida, "%Y-%m-%d").date()
+        except ValueError:
+            return jsonify({"disponible": True, "conflictos": [], "error": "Fechas inválidas"})
+
+        if salida <= entrada:
+            return jsonify({
+                "disponible": False,
+                "conflictos": [],
+                "error": "La fecha de salida debe ser posterior a la de entrada.",
+            })
+
+        conflictos = reservas_en_conflicto(habitacion_id, entrada, salida, exclude_id)
+        return jsonify({
+            "disponible": len(conflictos) == 0,
+            "conflictos": [
+                {
+                    "id": r.id,
+                    "nombre_reservante": r.nombre_reservante,
+                    "fecha_entrada": r.fecha_entrada.isoformat(),
+                    "fecha_salida": r.fecha_salida.isoformat(),
+                    "estado": r.estado,
+                }
+                for r in conflictos
+            ],
+        })
 
 
 # ── Index personalizado ──────────────────────────────────────────────────────
@@ -398,6 +510,8 @@ class ReporteGraficos(BaseView):
 
 
 # ── Registro en el menú ──────────────────────────────────────────────────────
+appbuilder.add_view_no_menu(HabitacionesPreciosAPI)
+appbuilder.add_view_no_menu(ReservaDisponibilidadAPI)
 appbuilder.add_view_no_menu(CustomIndexView)
 appbuilder.add_view(
     DashboardView, "Inicio",

@@ -1,0 +1,187 @@
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+
+  const habitacionSelect = document.querySelector("select[id*='habitacion']");
+  const fechaEntrada     = document.querySelector("input[id*='fecha_entrada']");
+  const fechaSalida      = document.querySelector("input[id*='fecha_salida']");
+  const form             = document.querySelector("form");
+
+  const reservaId = (function () {
+    const m = window.location.pathname.match(/\/edit\/(\d+)/);
+    return m ? m[1] : null;
+  })();
+
+  const panel = document.createElement("div");
+  panel.id = "resumen-costo";
+  panel.style.cssText = `
+    background: linear-gradient(135deg, #1a1a5e, #2d2d8f);
+    color: white;
+    border-radius: 10px;
+    padding: 20px 25px;
+    margin: 20px 0;
+    display: none;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+  `;
+  panel.innerHTML = `
+    <h4 style="margin:0 0 15px 0; color:#4ade80; font-size:16px;">
+      <i class="fa fa-calculator"></i> Resumen de Costo
+    </h4>
+    <div style="display:flex; gap:30px; flex-wrap:wrap; align-items:flex-end;">
+      <div>
+        <div style="font-size:11px; opacity:0.7; text-transform:uppercase;">Habitación</div>
+        <div id="res-hab" style="font-size:16px; font-weight:700;">-</div>
+      </div>
+      <div>
+        <div style="font-size:11px; opacity:0.7; text-transform:uppercase;">Precio/Noche</div>
+        <div id="res-precio" style="font-size:16px; font-weight:700;">-</div>
+      </div>
+      <div>
+        <div style="font-size:11px; opacity:0.7; text-transform:uppercase;">Noches</div>
+        <div id="res-noches" style="font-size:16px; font-weight:700;">-</div>
+      </div>
+      <div>
+        <div style="font-size:11px; opacity:0.7; text-transform:uppercase; color:#facc15;">Total a Pagar</div>
+        <div id="res-total" style="font-size:28px; font-weight:800; color:#facc15;">-</div>
+      </div>
+    </div>
+  `;
+
+  const alertPanel = document.createElement("div");
+  alertPanel.id = "alerta-ocupacion";
+  alertPanel.style.cssText = `
+    background: #fef2f2;
+    border: 1px solid #fca5a5;
+    border-left: 5px solid #ef4444;
+    color: #991b1b;
+    border-radius: 8px;
+    padding: 16px 20px;
+    margin: 16px 0;
+    display: none;
+  `;
+  alertPanel.innerHTML = `
+    <div style="font-weight:700; font-size:15px; margin-bottom:8px;">
+      <i class="fa fa-exclamation-triangle"></i> Habitación ocupada en esas fechas
+    </div>
+    <ul id="alerta-conflictos" style="margin:0; padding-left:20px;"></ul>
+    <div style="margin-top:10px; font-size:13px; opacity:0.9;">
+      Elija otra habitación o cambie las fechas para continuar.
+    </div>
+  `;
+
+  const btnGuardar = document.querySelector("input[type='submit'], button[type='submit']");
+  if (btnGuardar) {
+    const container = btnGuardar.closest(".well, .panel-body, form");
+    if (container) {
+      container.insertBefore(alertPanel, btnGuardar.closest(".form-actions, .well-form-actions, .form-group") || btnGuardar);
+      container.appendChild(panel);
+    }
+  }
+
+  let precios = {};
+  let hayConflicto = false;
+
+  fetch("/api/habitaciones_precios/")
+    .then(r => r.json())
+    .then(data => { precios = data; actualizar(); })
+    .catch(() => {});
+
+  function formatearFecha(iso) {
+    const [y, m, d] = iso.split("-");
+    return `${d}/${m}/${y}`;
+  }
+
+  function mostrarAlerta(data) {
+    const lista = document.getElementById("alerta-conflictos");
+    lista.innerHTML = "";
+
+    if (data.error && !data.conflictos.length) {
+      lista.innerHTML = `<li>${data.error}</li>`;
+      alertPanel.style.display = "block";
+      hayConflicto = true;
+      return;
+    }
+
+    if (!data.conflictos.length) {
+      alertPanel.style.display = "none";
+      hayConflicto = false;
+      return;
+    }
+
+    data.conflictos.forEach(c => {
+      const li = document.createElement("li");
+      li.textContent = `#${c.id} ${c.nombre_reservante} — ${formatearFecha(c.fecha_entrada)} al ${formatearFecha(c.fecha_salida)} (${c.estado})`;
+      lista.appendChild(li);
+    });
+    alertPanel.style.display = "block";
+    hayConflicto = true;
+  }
+
+  function verificarDisponibilidad(habId, e, s) {
+    if (!habId || !e || !s) {
+      alertPanel.style.display = "none";
+      hayConflicto = false;
+      return;
+    }
+
+    let url = `/api/reserva_disponibilidad/?habitacion_id=${habId}&fecha_entrada=${e}&fecha_salida=${s}`;
+    if (reservaId) url += `&exclude_id=${reservaId}`;
+
+    fetch(url)
+      .then(r => r.json())
+      .then(mostrarAlerta)
+      .catch(() => {});
+  }
+
+  function calcular() {
+    const habId = habitacionSelect ? habitacionSelect.value : null;
+    const e     = fechaEntrada ? fechaEntrada.value : null;
+    const s     = fechaSalida  ? fechaSalida.value  : null;
+
+    verificarDisponibilidad(habId, e, s);
+
+    if (!habId || !e || !s || !precios[habId]) {
+      panel.style.display = "none";
+      return;
+    }
+
+    const d1     = new Date(e);
+    const d2     = new Date(s);
+    const noches = Math.round((d2 - d1) / 86400000);
+
+    if (noches <= 0) {
+      document.getElementById("res-hab").textContent    = "⚠ La fecha de salida debe ser mayor a la entrada";
+      document.getElementById("res-precio").textContent = "";
+      document.getElementById("res-noches").textContent = "";
+      document.getElementById("res-total").textContent  = "";
+      panel.style.display = "block";
+      return;
+    }
+
+    const h     = precios[habId];
+    const total = noches * h.precio;
+
+    document.getElementById("res-hab").textContent    = `Hab. ${h.numero} (${h.tipo})`;
+    document.getElementById("res-precio").textContent = `Bs ${h.precio.toFixed(2)}`;
+    document.getElementById("res-noches").textContent = `${noches} noche${noches !== 1 ? "s" : ""}`;
+    document.getElementById("res-total").textContent  = `Bs ${total.toFixed(2)}`;
+    panel.style.display = "block";
+  }
+
+  function actualizar() { calcular(); }
+
+  if (habitacionSelect) habitacionSelect.addEventListener("change", calcular);
+  if (fechaEntrada)     fechaEntrada.addEventListener("change", calcular);
+  if (fechaSalida)      fechaSalida.addEventListener("change", calcular);
+
+  if (form) {
+    form.addEventListener("submit", function (ev) {
+      if (hayConflicto) {
+        ev.preventDefault();
+        alertPanel.scrollIntoView({ behavior: "smooth", block: "center" });
+      }
+    });
+  }
+
+  calcular();
+});
+</script>
