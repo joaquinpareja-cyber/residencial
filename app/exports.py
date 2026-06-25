@@ -186,22 +186,37 @@ class ExportPagosPDF(BaseView):
 
     @expose("/")
     def index(self):
-        pagos = Pago.query.all()
+        pagos = Pago.query.order_by(Pago.fecha.desc(), Pago.id.desc()).all()
         total = sum(p.monto for p in pagos)
-        headers = ["# Pago", "# Reserva", "Reservante", "Habitación", "Monto (Bs)", "Método", "Fecha"]
-        rows = [
-            [
+        headers = ["# Pago", "Referencia", "Origen", "Nombre", "Habitación", "Monto (Bs)", "Método", "Fecha"]
+        rows = []
+        for p in pagos:
+            if p.reserva:
+                referencia = p.reserva.id
+                origen = "Reserva"
+                nombre = p.reserva.nombre_reservante
+                habitacion = f"Hab. {p.reserva.habitacion.numero}" if p.reserva.habitacion else "-"
+            elif p.cliente:
+                referencia = p.cliente.id
+                origen = "Cliente"
+                nombre = p.cliente.nombre_completo
+                habitacion = f"Hab. {p.cliente.habitacion.numero}" if p.cliente.habitacion else "-"
+            else:
+                referencia = "-"
+                origen = "-"
+                nombre = "-"
+                habitacion = "-"
+            rows.append([
                 p.id,
-                p.reserva.id,
-                p.reserva.nombre_reservante,
-                f"Hab. {p.reserva.habitacion.numero}",
+                referencia,
+                origen,
+                nombre,
+                habitacion,
                 f"{p.monto:.2f}",
                 p.metodo,
                 str(p.fecha),
-            ]
-            for p in pagos
-        ]
-        rows.append(["", "", "", "TOTAL", f"{total:.2f}", "", ""])
+            ])
+        rows.append(["", "", "", "", "TOTAL", f"{total:.2f}", "", ""])
         pdf = build_pdf("Reporte de Pagos", headers, rows, landscape_mode=True)
         return Response(pdf, mimetype="application/pdf",
                         headers={"Content-Disposition": "attachment;filename=pagos.pdf"})
@@ -212,22 +227,37 @@ class ExportPagosExcel(BaseView):
 
     @expose("/")
     def index(self):
-        pagos = Pago.query.all()
+        pagos = Pago.query.order_by(Pago.fecha.desc(), Pago.id.desc()).all()
         total = sum(p.monto for p in pagos)
-        headers = ["# Pago", "# Reserva", "Reservante", "Habitación", "Monto (Bs)", "Método", "Fecha"]
-        rows = [
-            [
+        headers = ["# Pago", "Referencia", "Origen", "Nombre", "Habitación", "Monto (Bs)", "Método", "Fecha"]
+        rows = []
+        for p in pagos:
+            if p.reserva:
+                referencia = p.reserva.id
+                origen = "Reserva"
+                nombre = p.reserva.nombre_reservante
+                habitacion = f"Hab. {p.reserva.habitacion.numero}" if p.reserva.habitacion else "-"
+            elif p.cliente:
+                referencia = p.cliente.id
+                origen = "Cliente"
+                nombre = p.cliente.nombre_completo
+                habitacion = f"Hab. {p.cliente.habitacion.numero}" if p.cliente.habitacion else "-"
+            else:
+                referencia = "-"
+                origen = "-"
+                nombre = "-"
+                habitacion = "-"
+            rows.append([
                 p.id,
-                p.reserva.id,
-                p.reserva.nombre_reservante,
-                f"Hab. {p.reserva.habitacion.numero}",
+                referencia,
+                origen,
+                nombre,
+                habitacion,
                 round(p.monto, 2),
                 p.metodo,
                 str(p.fecha),
-            ]
-            for p in pagos
-        ]
-        rows.append(["", "", "", "TOTAL", round(total, 2), "", ""])
+            ])
+        rows.append(["", "", "", "", "TOTAL", round(total, 2), "", ""])
         excel = base_excel("Reporte de Pagos", headers, rows)
         return Response(excel,
                         mimetype="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",

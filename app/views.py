@@ -1,8 +1,9 @@
 from flask_appbuilder import ModelView, BaseView, expose
+from flask import redirect, url_for
 from flask_appbuilder.models.sqla.interface import SQLAInterface
 from flask_appbuilder.fieldwidgets import Select2Widget
 from flask_appbuilder.models.sqla.filters import FilterEqual
-from wtforms import SelectField
+from wtforms import SelectField, FloatField
 from wtforms.validators import DataRequired
 from sqlalchemy import func
 from datetime import date, datetime
@@ -69,6 +70,29 @@ def mensaje_conflicto_reserva(conflictos):
     return f"La habitación ya está ocupada en esas fechas: {detalle}"
 
 
+def sincronizar_estados_habitaciones():
+    habitaciones = Habitacion.query.all()
+    cambios = False
+
+    for habitacion in habitaciones:
+        if habitacion.estado == "mantenimiento":
+            continue
+
+        tiene_cliente_activo = (
+            Cliente.query.filter(
+                Cliente.habitacion_id == habitacion.id,
+                Cliente.activo.is_(True),
+            ).first() is not None
+        )
+        nuevo_estado = "ocupada" if tiene_cliente_activo else "disponible"
+        if habitacion.estado != nuevo_estado:
+            habitacion.estado = nuevo_estado
+            cambios = True
+
+    if cambios:
+        db.session.commit()
+
+
 class TipoHabitacionView(ModelView):
     datamodel = SQLAInterface(TipoHabitacion)
     label_columns = {
@@ -119,25 +143,31 @@ class ClienteView(ModelView):
         "email": "Correo Electrónico",
         "telefono": "Teléfono",
         "habitacion": "Habitación Asignada",
+        "monto_pago": "Monto del Pago (Bs)",
+        "metodo_pago": "Método de Pago",
     }
     list_columns = [
         "hora_ingreso", "nombre_completo", "ci",
-        "procedencia", "nacionalidad", "habitacion"
+        "procedencia", "nacionalidad", "habitacion", "activo",
+        "monto_pago", "metodo_pago"
     ]
     add_columns  = [
         "hora_ingreso", "nombre_completo", "procedencia",
         "nacionalidad", "profesion", "ci", "fecha_nacimiento",
         "estado_civil", "email", "telefono", "habitacion",
+        "monto_pago", "metodo_pago",
     ]
     edit_columns = [
         "hora_ingreso", "nombre_completo", "procedencia",
         "nacionalidad", "profesion", "ci", "fecha_nacimiento",
         "estado_civil", "email", "telefono", "habitacion",
+        "monto_pago", "metodo_pago",
     ]
     show_columns = [
         "hora_ingreso", "nombre_completo", "procedencia",
         "nacionalidad", "profesion", "ci", "fecha_nacimiento",
-        "estado_civil", "email", "telefono", "habitacion",
+        "estado_civil", "email", "telefono", "habitacion", "activo",
+        "monto_pago", "metodo_pago",
     ]
 
     add_form_extra_fields = {
@@ -145,9 +175,124 @@ class ClienteView(ModelView):
             "Estado Civil",
             choices=ESTADO_CIVIL_CHOICES,
             widget=Select2Widget(),
-        )
+        ),
+        "metodo_pago": SelectField(
+            "Método de Pago",
+            choices=METODO_PAGO_CHOICES,
+            widget=Select2Widget(),
+        ),
+        "monto_pago": FloatField("Monto del Pago (Bs)"),
     }
     edit_form_extra_fields = add_form_extra_fields
+
+    def _hay_otros_clientes_en_habitacion(self, habitacion_id, exclude_cliente_id=None):
+        query = Cliente.query.filter(Cliente.habitacion_id == habitacion_id)
+        if exclude_cliente_id is not None:
+            query = query.filter(Cliente.id != exclude_cliente_id)
+        return query.first() is not None
+
+    def _obtener_habitacion_id(self, item):
+        if getattr(item, "habitacion_id", None):
+            return item.habitacion_id
+        habitacion = getattr(item, "habitacion", None)
+        if habitacion is not None:
+            return getattr(habitacion, "id", None)
+        return None
+
+    def _actualizar_estado_habitacion(self, item, old_habitacion_id=None):
+        habitacion_id = self._obtener_habitacion_id(item)
+
+        if old_habitacion_id and old_habitacion_id != habitacion_id:
+            habitacion_anterior = db.session.get(Habitacion, old_habitacion_id)
+            if habitacion_anterior and not self._hay_otros_clientes_en_habitacion(old_habitacion_id, exclude_cliente_id=item.id):
+                habitacion_anterior.estado = "disponible"
+
+        if habitacion_id:
+            habitacion = db.session.get(Habitacion, habitacion_id)
+            if habitacion:
+                habitacion.estado = "ocupada"
+
+    def _guardar_pago_cliente(self, item):
+        if not item:
+            return
+
+        monto_raw = getattr(item, "monto_pago", None)
+        metodo = getattr(item, "metodo_pago", None)
+        if monto_raw in (None, ""):
+            return
+
+        try:
+            monto = float(monto_raw)
+        except (TypeError, ValueError):
+            return
+
+        if monto <= 0 or not metodo:
+            return
+
+        if item not in db.session:
+            db.session.add(item)
+
+        if getattr(item, "id", None) is None:
+            db.session.flush()
+
+        pago_existente = None
+        if getattr(item, "id", None):
+            pago_existente = db.session.query(Pago).filter(Pago.cliente_id == item.id).first()
+
+        if pago_existente is not None:
+            pago_existente.monto = monto
+            pago_existente.metodo = metodo
+            pago_existente.fecha = date.today()
+        else:
+            pago = Pago(
+                monto=monto,
+                metodo=metodo,
+                fecha=date.today(),
+                cliente_id=item.id,
+                reserva_id=None,
+            )
+            db.session.add(pago)
+
+    def pre_add(self, item):
+        self._actualizar_estado_habitacion(item)
+        self._guardar_pago_cliente(item)
+
+    def post_add(self, item):
+        db.session.commit()
+
+    def pre_update(self, item):
+        cliente_actual = db.session.get(Cliente, item.id)
+        old_habitacion_id = cliente_actual.habitacion_id if cliente_actual else None
+        self._actualizar_estado_habitacion(item, old_habitacion_id=old_habitacion_id)
+        self._guardar_pago_cliente(item)
+
+    def post_update(self, item):
+        db.session.commit()
+
+    def pre_delete(self, item):
+        if item.habitacion_id:
+            habitacion = db.session.get(Habitacion, item.habitacion_id)
+            if habitacion and not self._hay_otros_clientes_en_habitacion(item.habitacion_id, exclude_cliente_id=item.id):
+                habitacion.estado = "disponible"
+        sincronizar_estados_habitaciones()
+
+    @expose("/check_out/<int:cliente_id>")
+    def check_out(self, cliente_id):
+        cliente = db.session.get(Cliente, cliente_id)
+        if cliente:
+            if cliente.habitacion_id:
+                habitacion = db.session.get(Habitacion, cliente.habitacion_id)
+                if habitacion and not self._hay_otros_clientes_en_habitacion(cliente.habitacion_id, exclude_cliente_id=cliente.id):
+                    habitacion.estado = "disponible"
+                cliente.habitacion_id = None
+            cliente.activo = False
+            db.session.commit()
+            sincronizar_estados_habitaciones()
+        return redirect(url_for("ClienteView.list"))
+
+    def get_list_widget(self, *args, **kwargs):
+        widget = super().get_list_widget(*args, **kwargs)
+        return widget
 
 
 class ReservaView(ModelView):
@@ -213,14 +358,15 @@ class PagoView(ModelView):
     datamodel = SQLAInterface(Pago)
     label_columns = {
         "reserva": "Reserva",
+        "cliente": "Cliente",
         "monto": "Monto (Bs)",
         "metodo": "Método de pago",
         "fecha": "Fecha",
     }
-    list_columns = ["reserva", "monto", "metodo", "fecha"]
-    add_columns  = ["reserva", "monto", "metodo", "fecha"]
-    edit_columns = ["reserva", "monto", "metodo", "fecha"]
-    show_columns = ["reserva", "monto", "metodo", "fecha"]
+    list_columns = ["reserva", "cliente", "monto", "metodo", "fecha"]
+    add_columns  = ["reserva", "cliente", "monto", "metodo", "fecha"]
+    edit_columns = ["reserva", "cliente", "monto", "metodo", "fecha"]
+    show_columns = ["reserva", "cliente", "monto", "metodo", "fecha"]
 
     add_form_extra_fields = {
         "metodo": SelectField(
@@ -320,28 +466,6 @@ class ReservaDisponibilidadAPI(BaseView):
         })
 
 
-# ── Index personalizado ──────────────────────────────────────────────────────
-
-class CustomIndexView(BaseView):
-    route_base = "/"
-    default_view = "index"
-
-    @expose("/")
-    def index(self):
-        from sqlalchemy import func
-        total_clientes = Cliente.query.count()
-        hab_disponibles = Habitacion.query.filter_by(estado="disponible").count()
-        reservas_pendientes = Reserva.query.filter_by(estado="pendiente").count()
-        recaudado_total = db.session.query(func.sum(Pago.monto)).scalar() or 0
-        return self.render_template(
-            "appbuilder/index.html",
-            total_clientes=total_clientes,
-            hab_disponibles=hab_disponibles,
-            reservas_pendientes=reservas_pendientes,
-            recaudado_total=int(recaudado_total),
-        )
-
-
 # ── Dashboard ─────────────────────────────────────────────────────────────────
 
 class DashboardView(BaseView):
@@ -350,6 +474,7 @@ class DashboardView(BaseView):
 
     @expose("/")
     def index(self):
+        sincronizar_estados_habitaciones()
         hoy = date.today()
 
         total_clientes = Cliente.query.count()
@@ -393,11 +518,21 @@ class DashboardView(BaseView):
 
 # ── Vista visual de habitaciones ─────────────────────────────────────────────
 
+class SincronizarHabitacionesView(BaseView):
+    route_base = "/habitaciones/sincronizar"
+
+    @expose("/")
+    def index(self):
+        sincronizar_estados_habitaciones()
+        return redirect(url_for("HabitacionesVisualView.index"))
+
+
 class HabitacionesVisualView(BaseView):
     route_base = "/habitaciones/visual"
 
     @expose("/")
     def index(self):
+        sincronizar_estados_habitaciones()
         habitaciones = Habitacion.query.order_by(Habitacion.numero).all()
 
         # Agrupar por tipo
@@ -446,7 +581,9 @@ class ReportePagos(BaseView):
 
     @expose("/")
     def index(self):
-        pagos = Pago.query.all()
+        pagos = (
+            Pago.query.order_by(Pago.fecha.desc(), Pago.id.desc()).all()
+        )
         total = sum(p.monto for p in pagos)
         return self.render_template("reportes/reporte_pagos.html", pagos=pagos, total=total)
 
@@ -492,6 +629,15 @@ class ReporteGraficos(BaseView):
                 .group_by(Pago.metodo).all()
             )
         ]
+        reservas_por_habitacion = [
+            {"habitacion": f"Hab. {numero}", "cantidad": int(cantidad)}
+            for numero, cantidad in (
+                db.session.query(Habitacion.numero, func.count(Reserva.id))
+                .join(Reserva, Reserva.habitacion_id == Habitacion.id)
+                .group_by(Habitacion.numero)
+                .all()
+            )
+        ]
         servicios_consumo = [
             {"servicio": s.nombre, "total": int(total)}
             for s, total in (
@@ -505,6 +651,7 @@ class ReporteGraficos(BaseView):
             reservas_estado=reservas_estado,
             habitaciones_tipo=habitaciones_tipo,
             pagos_metodo=pagos_metodo,
+            reservas_por_habitacion=reservas_por_habitacion,
             servicios_consumo=servicios_consumo,
         )
 
@@ -512,7 +659,6 @@ class ReporteGraficos(BaseView):
 # ── Registro en el menú ──────────────────────────────────────────────────────
 appbuilder.add_view_no_menu(HabitacionesPreciosAPI)
 appbuilder.add_view_no_menu(ReservaDisponibilidadAPI)
-appbuilder.add_view_no_menu(CustomIndexView)
 appbuilder.add_view(
     DashboardView, "Inicio",
     icon="fa-dashboard", category="",
@@ -526,10 +672,17 @@ appbuilder.add_view(
     icon="fa-home", category="Habitaciones",
 )
 appbuilder.add_view_no_menu(HabitacionesVisualView)
+appbuilder.add_view_no_menu(SincronizarHabitacionesView)
 appbuilder.add_link(
     "Vista Visual",
     href="/habitaciones/visual/",
     icon="fa-th-large",
+    category="Habitaciones",
+)
+appbuilder.add_link(
+    "Sincronizar Estados",
+    href="/habitaciones/sincronizar/",
+    icon="fa-refresh",
     category="Habitaciones",
 )
 appbuilder.add_view(
@@ -544,18 +697,9 @@ appbuilder.add_view(
     PagoView, "Pagos",
     icon="fa-money", category="Gestión",
 )
-appbuilder.add_view(
-    ServicioView, "Servicios",
-    icon="fa-star", category="Catálogos",
-)
-appbuilder.add_view(
-    ReservaServicioView, "Servicios por Reserva",
-    icon="fa-list", category="Catálogos",
-)
 appbuilder.add_view_no_menu(ReporteClientes)
 appbuilder.add_view_no_menu(ReporteReservas)
 appbuilder.add_view_no_menu(ReportePagos)
-appbuilder.add_view_no_menu(ReporteServicios)
 appbuilder.add_view_no_menu(ReporteGraficos)
 
 appbuilder.add_link(
@@ -565,21 +709,15 @@ appbuilder.add_link(
     category="Reportes",
 )
 appbuilder.add_link(
-    "Reservas Detalladas",
+    "Reservas",
     href="/reportes/reservas/",
     icon="fa-calendar",
     category="Reportes",
 )
 appbuilder.add_link(
-    "Pagos por Reserva",
+    "Pagos",
     href="/reportes/pagos/",
     icon="fa-money",
-    category="Reportes",
-)
-appbuilder.add_link(
-    "Servicios Consumidos",
-    href="/reportes/servicios/",
-    icon="fa-star",
     category="Reportes",
 )
 appbuilder.add_link(
