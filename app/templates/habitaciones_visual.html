@@ -1,0 +1,81 @@
+{% extends "appbuilder/base.html" %}
+
+{% block content %}
+<div class="container-fluid">
+
+  <h2 class="page-header">
+    <i class="fa fa-home"></i> Estado de Habitaciones
+  </h2>
+
+  <!-- Leyenda + filtros -->
+  <div class="row" style="margin-bottom:20px;">
+    <div class="col-md-8">
+      <span style="margin-right:20px;">
+        <span style="background:#1cc88a; color:white; padding:4px 12px; border-radius:20px; font-size:13px;">
+          ● Disponible ({{ disponibles }})
+        </span>
+      </span>
+      <span style="margin-right:20px;">
+        <span style="background:#e74a3b; color:white; padding:4px 12px; border-radius:20px; font-size:13px;">
+          ● Ocupada ({{ ocupadas }})
+        </span>
+      </span>
+      <span>
+        <span style="background:#f6c23e; color:white; padding:4px 12px; border-radius:20px; font-size:13px;">
+          ● Mantenimiento ({{ mantenimiento }})
+        </span>
+      </span>
+    </div>
+    <div class="col-md-4 text-right">
+      <a href="/habitacionview/add" class="btn btn-primary btn-sm">
+        <i class="fa fa-plus"></i> Nueva Habitación
+      </a>
+    </div>
+  </div>
+
+  <!-- Tarjetas por tipo -->
+  {% for tipo, habs in habitaciones_por_tipo.items() %}
+  <div class="panel panel-default">
+    <div class="panel-heading" style="background:#3c3c3c; color:white;">
+      <i class="fa fa-bed"></i> {{ tipo }}
+    </div>
+    <div class="panel-body">
+      <div class="row">
+        {% for h in habs %}
+        <div class="col-xl-2 col-lg-2 col-md-3 col-sm-4 col-xs-6" style="margin-bottom:15px;">
+          <div style="
+            border-radius:10px;
+            padding:15px 10px;
+            text-align:center;
+            color:white;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+            background: {% if h.estado == 'disponible' %}#1cc88a
+                        {% elif h.estado == 'ocupada' %}#e74a3b
+                        {% else %}#f6c23e{% endif %};
+          ">
+            <div style="font-size:28px; font-weight:700;">{{ h.numero }}</div>
+            <div style="font-size:11px; margin:4px 0; opacity:0.9;">{{ h.tipo.nombre }}</div>
+            <div style="font-size:12px; font-weight:600; text-transform:uppercase;">{{ h.estado }}</div>
+            <div style="font-size:11px; margin-top:4px; opacity:0.85;">Bs {{ "%.0f"|format(h.precio_noche) }}/noche</div>
+            <div style="margin-top:10px; display:flex; justify-content:center; gap:6px;">
+              <a href="/habitacionview/edit/{{ h.id }}"
+                 style="background:rgba(255,255,255,0.3); color:white; border-radius:4px; padding:3px 8px; font-size:11px; text-decoration:none;">
+                <i class="fa fa-pencil"></i>
+              </a>
+              <a href="/habitacionview/show/{{ h.id }}"
+                 style="background:rgba(255,255,255,0.3); color:white; border-radius:4px; padding:3px 8px; font-size:11px; text-decoration:none;">
+                <i class="fa fa-eye"></i>
+              </a>
+            </div>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+  {% else %}
+  <div class="alert alert-info">No hay habitaciones registradas aún.</div>
+  {% endfor %}
+
+</div>
+{% endblock %}

@@ -1,0 +1,187 @@
+{% extends "appbuilder/base.html" %}
+
+{% block content %}
+<div class="container-fluid">
+
+  <h2 class="page-header">
+    <i class="fa fa-dashboard"></i> Panel de Control
+    <small>Resumen del sistema</small>
+  </h2>
+
+  <!-- ── Tarjetas de resumen ── -->
+  <div class="row">
+
+    <div class="col-xl-3 col-md-6 col-sm-6">
+      <div class="panel" style="background:#4e73df; color:white; border-radius:8px; padding:20px;">
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+          <div>
+            <div style="font-size:12px; font-weight:700; text-transform:uppercase; margin-bottom:4px;">Clientes Registrados</div>
+            <div style="font-size:36px; font-weight:700;">{{ total_clientes }}</div>
+            <div style="font-size:12px; opacity:0.8;">Hoy: {{ clientes_hoy }}</div>
+          </div>
+          <i class="fa fa-users" style="font-size:40px; opacity:0.4;"></i>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-xl-3 col-md-6 col-sm-6">
+      <div class="panel" style="background:#1cc88a; color:white; border-radius:8px; padding:20px;">
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+          <div>
+            <div style="font-size:12px; font-weight:700; text-transform:uppercase; margin-bottom:4px;">Habitaciones Disponibles</div>
+            <div style="font-size:36px; font-weight:700;">{{ hab_disponibles }}</div>
+            <div style="font-size:12px; opacity:0.8;">Total: {{ total_habitaciones }}</div>
+          </div>
+          <i class="fa fa-home" style="font-size:40px; opacity:0.4;"></i>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-xl-3 col-md-6 col-sm-6">
+      <div class="panel" style="background:#e74a3b; color:white; border-radius:8px; padding:20px;">
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+          <div>
+            <div style="font-size:12px; font-weight:700; text-transform:uppercase; margin-bottom:4px;">Reservas Pendientes</div>
+            <div style="font-size:36px; font-weight:700;">{{ reservas_pendientes }}</div>
+            <div style="font-size:12px; opacity:0.8;">Total: {{ total_reservas }}</div>
+          </div>
+          <i class="fa fa-calendar" style="font-size:40px; opacity:0.4;"></i>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-xl-3 col-md-6 col-sm-6">
+      <div class="panel" style="background:#f6c23e; color:white; border-radius:8px; padding:20px;">
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+          <div>
+            <div style="font-size:12px; font-weight:700; text-transform:uppercase; margin-bottom:4px;">Recaudado este Mes</div>
+            <div style="font-size:32px; font-weight:700;">Bs {{ "%.0f"|format(recaudado_mes) }}</div>
+            <div style="font-size:12px; opacity:0.8;">Total: Bs {{ "%.0f"|format(recaudado_total) }}</div>
+          </div>
+          <i class="fa fa-money" style="font-size:40px; opacity:0.4;"></i>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ── Estado de habitaciones + Reservas recientes ── -->
+  <div class="row" style="margin-top:20px;">
+
+    <!-- Estado habitaciones -->
+    <div class="col-md-5">
+      <div class="panel panel-default">
+        <div class="panel-heading" style="background:#3c3c3c; color:white;">
+          <i class="fa fa-home"></i> Estado de Habitaciones
+        </div>
+        <div class="panel-body" style="padding:10px;">
+          <div class="row">
+            {% for h in habitaciones %}
+            <div class="col-xs-4" style="margin-bottom:10px;">
+              <div style="
+                border-radius:8px;
+                padding:10px 8px;
+                text-align:center;
+                color:white;
+                font-weight:bold;
+                font-size:13px;
+                background: {% if h.estado == 'disponible' %}#1cc88a{% elif h.estado == 'ocupada' %}#e74a3b{% else %}#f6c23e{% endif %};
+              ">
+                <div style="font-size:18px;">{{ h.numero }}</div>
+                <div style="font-size:10px; opacity:0.9;">{{ h.estado }}</div>
+              </div>
+            </div>
+            {% endfor %}
+          </div>
+          <hr>
+          <div style="display:flex; gap:15px; font-size:12px;">
+            <span><span style="color:#1cc88a;">■</span> Disponible ({{ hab_disponibles }})</span>
+            <span><span style="color:#e74a3b;">■</span> Ocupada ({{ hab_ocupadas }})</span>
+            <span><span style="color:#f6c23e;">■</span> Mantenimiento ({{ hab_mantenimiento }})</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Reservas recientes -->
+    <div class="col-md-7">
+      <div class="panel panel-default">
+        <div class="panel-heading" style="background:#3c3c3c; color:white;">
+          <i class="fa fa-calendar"></i> Últimas Reservas
+        </div>
+        <table class="table table-striped table-hover" style="margin:0;">
+          <thead>
+            <tr style="background:#f8f8f8;">
+              <th>#</th>
+              <th>Reservante</th>
+              <th>Habitación</th>
+              <th>Entrada</th>
+              <th>Estado</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for r in ultimas_reservas %}
+            <tr>
+              <td>{{ r.id }}</td>
+              <td>{{ r.nombre_reservante }}</td>
+              <td>Hab. {{ r.habitacion.numero }}</td>
+              <td>{{ r.fecha_entrada }}</td>
+              <td>
+                {% if r.estado == 'confirmada' %}
+                  <span class="label label-success">{{ r.estado }}</span>
+                {% elif r.estado == 'pendiente' %}
+                  <span class="label label-warning">{{ r.estado }}</span>
+                {% else %}
+                  <span class="label label-danger">{{ r.estado }}</span>
+                {% endif %}
+              </td>
+            </tr>
+            {% else %}
+            <tr><td colspan="5" class="text-center text-muted">Sin reservas</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ── Clientes recientes ── -->
+  <div class="row" style="margin-top:10px;">
+    <div class="col-md-12">
+      <div class="panel panel-default">
+        <div class="panel-heading" style="background:#3c3c3c; color:white;">
+          <i class="fa fa-users"></i> Últimos Clientes Registrados
+        </div>
+        <table class="table table-striped table-hover" style="margin:0;">
+          <thead>
+            <tr style="background:#f8f8f8;">
+              <th>Hora Ingreso</th>
+              <th>Nombre Completo</th>
+              <th>C.I.</th>
+              <th>Nacionalidad</th>
+              <th>Teléfono</th>
+              <th>Habitación</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for c in ultimos_clientes %}
+            <tr>
+              <td>{{ c.hora_ingreso or '-' }}</td>
+              <td>{{ c.nombre_completo }}</td>
+              <td>{{ c.ci }}</td>
+              <td>{{ c.nacionalidad or '-' }}</td>
+              <td>{{ c.telefono or '-' }}</td>
+              <td>{{ c.habitacion.numero if c.habitacion else '-' }}</td>
+            </tr>
+            {% else %}
+            <tr><td colspan="6" class="text-center text-muted">Sin clientes registrados</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+</div>
+{% endblock %}
