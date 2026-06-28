@@ -153,6 +153,44 @@
     </div>
 
   </div>
+
+  <!-- ── Panel de Pronóstico IA ── -->
+  <div class="row" style="margin-top:20px;">
+    <div class="col-md-12">
+      <div class="panel panel-info">
+        <div class="panel-heading">
+          <i class="fa fa-magic"></i> Análisis y Pronóstico con IA (Gemini)
+        </div>
+        <div class="panel-body">
+          <button id="btnPronostico" class="btn btn-primary btn-lg" onclick="obtenerPronostico()">
+            <i class="fa fa-line-chart"></i> Analizar datos y generar pronóstico
+          </button>
+
+          <div id="loadingIA" style="display:none; margin-top:20px; font-size:16px; color:#555;">
+            <i class="fa fa-spinner fa-spin"></i> Analizando datos con Gemini IA, por favor espera...
+          </div>
+
+          <div id="resultadoIA" style="
+            display:none;
+            margin-top:20px;
+            white-space:pre-line;
+            background:#f4f9ff;
+            padding:20px;
+            border-radius:8px;
+            border-left:5px solid #36b9cc;
+            font-size:14px;
+            line-height:1.7;
+            color:#333;
+          "></div>
+
+          <button id="btnCopiar" class="btn btn-default" onclick="copiarPronostico()" style="display:none; margin-top:10px;">
+            <i class="fa fa-copy"></i> Copiar análisis
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
@@ -207,5 +245,45 @@
     },
     options: { plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true } } }
   });
+
+  // ── Pronóstico IA ──
+  function obtenerPronostico() {
+    document.getElementById("loadingIA").style.display = "block";
+    document.getElementById("resultadoIA").style.display = "none";
+    document.getElementById("btnCopiar").style.display = "none";
+    document.getElementById("btnPronostico").disabled = true;
+
+    fetch("/api/pronostico/", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        reservas_estado:   datosReservasEstado,
+        habitaciones_tipo: datosHabitacionesTipo,
+        pagos_metodo:      datosPagoMetodo,
+        servicios_consumo: datosServicios
+      })
+    })
+    .then(r => r.json())
+    .then(data => {
+      document.getElementById("loadingIA").style.display = "none";
+      document.getElementById("resultadoIA").style.display = "block";
+      document.getElementById("resultadoIA").innerText = data.pronostico;
+      document.getElementById("btnCopiar").style.display = "inline-block";
+      document.getElementById("btnPronostico").disabled = false;
+    })
+    .catch(err => {
+      document.getElementById("loadingIA").style.display = "none";
+      document.getElementById("resultadoIA").style.display = "block";
+      document.getElementById("resultadoIA").innerText = "Error al contactar la IA. Verifica que tu API key de Gemini esté configurada en el archivo .env";
+      document.getElementById("btnPronostico").disabled = false;
+    });
+  }
+
+  function copiarPronostico() {
+    const texto = document.getElementById("resultadoIA").innerText;
+    navigator.clipboard.writeText(texto).then(() => {
+      alert("Análisis copiado al portapapeles.");
+    });
+  }
 </script>
 {% endblock %}
