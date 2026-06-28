@@ -11,32 +11,16 @@
     <!-- Gráfico 1: Reservas por estado (torta) -->
     <div class="col-md-6">
       <div class="panel panel-primary">
-        <div class="panel-heading">
-          <i class="fa fa-pie-chart"></i> Reservas por Estado
-        </div>
-        <div class="panel-body">
-          <canvas id="graficoReservasEstado" height="220"></canvas>
-        </div>
+        <div class="panel-heading"><i class="fa fa-pie-chart"></i> Reservas por Estado</div>
+        <div class="panel-body"><canvas id="graficoReservasEstado" height="220"></canvas></div>
       </div>
       <div class="panel panel-default">
-        <div class="panel-heading" style="background-color:#3c3c3c; color:white;">
-          <i class="fa fa-table"></i> Reservas por Estado
-        </div>
+        <div class="panel-heading" style="background-color:#3c3c3c; color:white;"><i class="fa fa-table"></i> Reservas por Estado</div>
         <table class="table table-bordered table-striped">
-          <thead style="background-color:#555; color:white;">
-            <tr>
-              <th>#</th>
-              <th>Estado</th>
-              <th>Cantidad</th>
-            </tr>
-          </thead>
+          <thead style="background-color:#555; color:white;"><tr><th>#</th><th>Estado</th><th>Cantidad</th></tr></thead>
           <tbody>
             {% for i, d in reservas_estado | enumerate %}
-            <tr>
-              <td>{{ i + 1 }}</td>
-              <td>{{ d.estado }}</td>
-              <td><span class="badge" style="background-color:#4e73df;">{{ d.cantidad }}</span></td>
-            </tr>
+            <tr><td>{{ i + 1 }}</td><td>{{ d.estado }}</td><td><span class="badge" style="background-color:#4e73df;">{{ d.cantidad }}</span></td></tr>
             {% endfor %}
           </tbody>
         </table>
@@ -46,32 +30,16 @@
     <!-- Gráfico 2: Habitaciones por tipo (torta) -->
     <div class="col-md-6">
       <div class="panel panel-success">
-        <div class="panel-heading">
-          <i class="fa fa-pie-chart"></i> Habitaciones por Tipo
-        </div>
-        <div class="panel-body">
-          <canvas id="graficoHabitacionesTipo" height="220"></canvas>
-        </div>
+        <div class="panel-heading"><i class="fa fa-pie-chart"></i> Habitaciones por Tipo</div>
+        <div class="panel-body"><canvas id="graficoHabitacionesTipo" height="220"></canvas></div>
       </div>
       <div class="panel panel-default">
-        <div class="panel-heading" style="background-color:#3c3c3c; color:white;">
-          <i class="fa fa-table"></i> Habitaciones por Tipo
-        </div>
+        <div class="panel-heading" style="background-color:#3c3c3c; color:white;"><i class="fa fa-table"></i> Habitaciones por Tipo</div>
         <table class="table table-bordered table-striped">
-          <thead style="background-color:#555; color:white;">
-            <tr>
-              <th>#</th>
-              <th>Tipo</th>
-              <th>Cantidad</th>
-            </tr>
-          </thead>
+          <thead style="background-color:#555; color:white;"><tr><th>#</th><th>Tipo</th><th>Cantidad</th></tr></thead>
           <tbody>
             {% for i, d in habitaciones_tipo | enumerate %}
-            <tr>
-              <td>{{ i + 1 }}</td>
-              <td>{{ d.tipo }}</td>
-              <td><span class="badge" style="background-color:#1cc88a;">{{ d.cantidad }}</span></td>
-            </tr>
+            <tr><td>{{ i + 1 }}</td><td>{{ d.tipo }}</td><td><span class="badge" style="background-color:#1cc88a;">{{ d.cantidad }}</span></td></tr>
             {% endfor %}
           </tbody>
         </table>
@@ -85,32 +53,16 @@
     <!-- Gráfico 3: Pagos por método (barras) -->
     <div class="col-md-6">
       <div class="panel panel-warning">
-        <div class="panel-heading">
-          <i class="fa fa-bar-chart"></i> Total Recaudado por Método de Pago (Bs)
-        </div>
-        <div class="panel-body">
-          <canvas id="graficoPagoMetodo" height="220"></canvas>
-        </div>
+        <div class="panel-heading"><i class="fa fa-bar-chart"></i> Total Recaudado por Método de Pago (Bs)</div>
+        <div class="panel-body"><canvas id="graficoPagoMetodo" height="220"></canvas></div>
       </div>
       <div class="panel panel-default">
-        <div class="panel-heading" style="background-color:#3c3c3c; color:white;">
-          <i class="fa fa-table"></i> Pagos por Método
-        </div>
+        <div class="panel-heading" style="background-color:#3c3c3c; color:white;"><i class="fa fa-table"></i> Pagos por Método</div>
         <table class="table table-bordered table-striped">
-          <thead style="background-color:#555; color:white;">
-            <tr>
-              <th>#</th>
-              <th>Método</th>
-              <th>Total (Bs)</th>
-            </tr>
-          </thead>
+          <thead style="background-color:#555; color:white;"><tr><th>#</th><th>Método</th><th>Total (Bs)</th></tr></thead>
           <tbody>
             {% for i, d in pagos_metodo | enumerate %}
-            <tr>
-              <td>{{ i + 1 }}</td>
-              <td>{{ d.metodo }}</td>
-              <td><span class="badge" style="background-color:#f6c23e; color:#333;">{{ d.total }}</span></td>
-            </tr>
+            <tr><td>{{ i + 1 }}</td><td>{{ d.metodo }}</td><td><span class="badge" style="background-color:#f6c23e; color:#333;">{{ d.total }}</span></td></tr>
             {% endfor %}
           </tbody>
         </table>
@@ -120,92 +72,129 @@
     <!-- Gráfico 4: Reservas por habitación (barras) -->
     <div class="col-md-6">
       <div class="panel panel-info">
-        <div class="panel-heading">
-          <i class="fa fa-bar-chart"></i> Reservas por Habitación
-        </div>
-        <div class="panel-body">
-          <canvas id="graficoReservasHabitacion" height="220"></canvas>
-        </div>
+        <div class="panel-heading"><i class="fa fa-bar-chart"></i> Reservas por Habitación</div>
+        <div class="panel-body"><canvas id="graficoReservasHabitacion" height="220"></canvas></div>
       </div>
       <div class="panel panel-default">
-        <div class="panel-heading" style="background-color:#3c3c3c; color:white;">
-          <i class="fa fa-table"></i> Reservas por Habitación
-        </div>
+        <div class="panel-heading" style="background-color:#3c3c3c; color:white;"><i class="fa fa-table"></i> Reservas por Habitación</div>
         <table class="table table-bordered table-striped">
-          <thead style="background-color:#555; color:white;">
-            <tr>
-              <th>#</th>
-              <th>Habitación</th>
-              <th>Cantidad</th>
-            </tr>
-          </thead>
+          <thead style="background-color:#555; color:white;"><tr><th>#</th><th>Habitación</th><th>Cantidad</th></tr></thead>
           <tbody>
             {% for i, d in reservas_por_habitacion | enumerate %}
-            <tr>
-              <td>{{ i + 1 }}</td>
-              <td>{{ d.habitacion }}</td>
-              <td><span class="badge" style="background-color:#36b9cc;">{{ d.cantidad }}</span></td>
-            </tr>
+            <tr><td>{{ i + 1 }}</td><td>{{ d.habitacion }}</td><td><span class="badge" style="background-color:#36b9cc;">{{ d.cantidad }}</span></td></tr>
             {% endfor %}
           </tbody>
         </table>
       </div>
     </div>
+
   </div>
+
+  <!-- ── Panel de Pronóstico IA ── -->
+  <div class="row" style="margin-top:20px;">
+    <div class="col-md-12">
+      <div class="panel panel-info">
+        <div class="panel-heading">
+          <i class="fa fa-magic"></i> Análisis y Pronóstico con IA (Groq)
+        </div>
+        <div class="panel-body">
+          <button id="btnPronostico" class="btn btn-primary btn-lg" onclick="obtenerPronostico()">
+            <i class="fa fa-line-chart"></i> Analizar datos y generar pronóstico
+          </button>
+          <div id="loadingIA" style="display:none; margin-top:20px; font-size:16px; color:#555;">
+            <i class="fa fa-spinner fa-spin"></i> Analizando datos con IA, por favor espera...
+          </div>
+          <div id="resultadoIA" style="
+            display:none;
+            margin-top:20px;
+            white-space:pre-line;
+            background:#f4f9ff;
+            padding:20px;
+            border-radius:8px;
+            border-left:5px solid #36b9cc;
+            font-size:14px;
+            line-height:1.7;
+            color:#333;
+          "></div>
+          <button id="btnCopiar" class="btn btn-default" onclick="copiarPronostico()" style="display:none; margin-top:10px;">
+            <i class="fa fa-copy"></i> Copiar análisis
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <script>
-  const datosReservasEstado   = {{ reservas_estado   | tojson }};
-  const datosHabitacionesTipo = {{ habitaciones_tipo | tojson }};
-  const datosPagoMetodo       = {{ pagos_metodo      | tojson }};
+  const datosReservasEstado     = {{ reservas_estado         | tojson }};
+  const datosHabitacionesTipo   = {{ habitaciones_tipo       | tojson }};
+  const datosPagoMetodo         = {{ pagos_metodo            | tojson }};
   const datosReservasHabitacion = {{ reservas_por_habitacion | tojson }};
 
   const colores = ["#4e73df","#1cc88a","#e74a3b","#f6c23e","#36b9cc","#858796"];
 
   new Chart(document.getElementById("graficoReservasEstado"), {
     type: "pie",
-    data: {
-      labels: datosReservasEstado.map(d => d.estado),
-      datasets: [{ data: datosReservasEstado.map(d => d.cantidad), backgroundColor: colores }]
-    },
+    data: { labels: datosReservasEstado.map(d => d.estado), datasets: [{ data: datosReservasEstado.map(d => d.cantidad), backgroundColor: colores }] },
     options: { plugins: { legend: { position: "bottom" } }, maintainAspectRatio: false }
   });
 
   new Chart(document.getElementById("graficoHabitacionesTipo"), {
     type: "pie",
-    data: {
-      labels: datosHabitacionesTipo.map(d => d.tipo),
-      datasets: [{ data: datosHabitacionesTipo.map(d => d.cantidad), backgroundColor: colores }]
-    },
+    data: { labels: datosHabitacionesTipo.map(d => d.tipo), datasets: [{ data: datosHabitacionesTipo.map(d => d.cantidad), backgroundColor: colores }] },
     options: { plugins: { legend: { position: "bottom" } }, maintainAspectRatio: false }
   });
 
   new Chart(document.getElementById("graficoPagoMetodo"), {
     type: "bar",
-    data: {
-      labels: datosPagoMetodo.map(d => d.metodo),
-      datasets: [{
-        label: "Total (Bs)",
-        data: datosPagoMetodo.map(d => d.total),
-        backgroundColor: colores,
-      }]
-    },
+    data: { labels: datosPagoMetodo.map(d => d.metodo), datasets: [{ label: "Total (Bs)", data: datosPagoMetodo.map(d => d.total), backgroundColor: colores }] },
     options: { plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true } }, maintainAspectRatio: false }
   });
 
   new Chart(document.getElementById("graficoReservasHabitacion"), {
     type: "bar",
-    data: {
-      labels: datosReservasHabitacion.map(d => d.habitacion),
-      datasets: [{
-        label: "Reservas",
-        data: datosReservasHabitacion.map(d => d.cantidad),
-        backgroundColor: "#36b9cc"
-      }]
-    },
+    data: { labels: datosReservasHabitacion.map(d => d.habitacion), datasets: [{ label: "Reservas", data: datosReservasHabitacion.map(d => d.cantidad), backgroundColor: "#36b9cc" }] },
     options: { plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true } }, maintainAspectRatio: false }
   });
 
+  // ── Pronóstico IA ──
+  function obtenerPronostico() {
+    document.getElementById("loadingIA").style.display = "block";
+    document.getElementById("resultadoIA").style.display = "none";
+    document.getElementById("btnCopiar").style.display = "none";
+    document.getElementById("btnPronostico").disabled = true;
+
+    fetch("/api/pronostico/", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        reservas_estado:        datosReservasEstado,
+        habitaciones_tipo:      datosHabitacionesTipo,
+        pagos_metodo:           datosPagoMetodo,
+        reservas_por_habitacion: datosReservasHabitacion,
+      })
+    })
+    .then(r => r.json())
+    .then(data => {
+      document.getElementById("loadingIA").style.display = "none";
+      document.getElementById("resultadoIA").style.display = "block";
+      document.getElementById("resultadoIA").innerText = data.pronostico;
+      document.getElementById("btnCopiar").style.display = "inline-block";
+      document.getElementById("btnPronostico").disabled = false;
+    })
+    .catch(() => {
+      document.getElementById("loadingIA").style.display = "none";
+      document.getElementById("resultadoIA").style.display = "block";
+      document.getElementById("resultadoIA").innerText = "Error al contactar la IA. Verifica que tu GROQ_API_KEY esté configurada en el archivo .env";
+      document.getElementById("btnPronostico").disabled = false;
+    });
+  }
+
+  function copiarPronostico() {
+    const texto = document.getElementById("resultadoIA").innerText;
+    navigator.clipboard.writeText(texto).then(() => alert("Análisis copiado al portapapeles."));
+  }
 </script>
 {% endblock %}
